@@ -5,7 +5,7 @@ if nargin < 4
 end
 
 if ~isfield(fitParamSet,'linear_env')
-    fitParamSet.linear_env = 0; % Set default value for linear_env if not provided
+    fitParamSet.linear_env = 1; % Set default value for linear_env if not provided
 end
 
 if ~isfield(fitParamSet,'rnd_flag')
