@@ -57,4 +57,5 @@ for rp = 1 : n_reps
         [rec_nll(rp), rec_pR2(rp), recParams(rp,:)] = crossValFit(fitParamSet.algo, fitParamSet.kfolds, fitParamSet.iters, ...
             fitParamSet.param_bnds, choices, rewards, n_arms, fitParamSet.optim, fitParamSet.linear_env, fitParamSet.rnd_flag);
     end
+    disp(['Rep ' num2str(rp) ' of ' num2str(n_reps)]);
 end
