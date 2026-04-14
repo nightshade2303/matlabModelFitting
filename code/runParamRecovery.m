@@ -9,7 +9,7 @@ addpath('./fminsearchbnd/');
 % load("./Data/hMABdat.mat","hMABall");
 
 %% specify algo
-fit_type = "Ql";
+fit_type = "Qgen";
 
 %% simulation settings
 n_reps = 100;
@@ -18,10 +18,10 @@ simParamSet = struct;
 simParamSet.rprobset = generateRProbSet(n_rounds, 4, true);
 simParamSet.n_rounds = n_rounds;
 simParamSet.n_trials = 100;
-simParamsSet.algo = 'Qlearning';
+simParamSet.algo = 'Qlearning';
 %            params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-simParamSet.param_bnds = [0,     0,    0,       0,      1e-2,   0,     0; 
-                           1,    0,      0,       0,     2e1,    10,    1];
+simParamSet.param_bnds = [0,     1e-2,    0,       0,      1e-2,   0,     0; 
+                           1,    2,      0,       0,     2e1,    10,    1];
 simParamSet.logspace =    [0,    0,     0,       0,       1,     0,     0];
 
 
@@ -31,7 +31,6 @@ simParamSet.logspace =    [0,    0,     0,       0,       1,     0,     0];
 fitParamSet = struct;
 fitParamSet.kfolds = 0;
 fitParamSet.iters = 1;
-fitParamSet.param_bnds = param_bnds;
 fitParamSet.optim = 'bads';
 fitParamSet.linear_env = 1;
 fitParamSet.rnd_flag = 0;
@@ -99,12 +98,13 @@ switch char(fit_type)
                         0.7,  0.2,    0.2,     0.09,   38,     2.5,   1,   1];   % st
 
 end
+fitParamSet.param_bnds = param_bnds;
 
 tic()
 [recParams, simParams, rec_nll, rec_pR2] = paramRecovery(simParamSet, fitParamSet, n_reps);
 
 %% saving the params
-t = datetime('now', 'Format', 'yyyyMMdd_HHmm');
+t = datetime('now', 'Format', 'yyyyMMdd_HHmmss');
 filename = sprintf('%s_%s_%s_%s.m', t, fit_type, optim);
 save(fullfile("~/behavioralAnalysis/matlabModelFitting/output/sim/", filename), "simParams", "recParams")
 toc()
