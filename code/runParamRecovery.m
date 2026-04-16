@@ -9,7 +9,7 @@ addpath('./fminsearchbnd/');
 % load("./Data/hMABdat.mat","hMABall");
 
 %% specify algo
-fit_type = "Qgen";
+fit_type = "BB";
 
 %% simulation settings
 n_reps = 100;
@@ -18,13 +18,30 @@ simParamSet = struct;
 simParamSet.rprobset = generateRProbSet(n_rounds, 4, true);
 simParamSet.n_rounds = n_rounds;
 simParamSet.n_trials = 100;
-simParamSet.algo = 'Qlearning';
-%            params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-simParamSet.param_bnds = [0,     1e-2,    0,       0,      1e-2,   0,     0; 
-                           1,    2,      0,       0,     2e1,    10,    1];
-simParamSet.logspace =    [0,    0,     0,       0,       1,     0,     0];
 
+switch char(fit_type)
+    case {'BB', 'BBgen'}
+        simParamSet.algo = 'BetaBayes';
+                   % params    lr_max  lambda, decay, ucb2_w, rnd_w,  sty_w,  a0,  b0
+        simParamSet.param_bnds = [0,    0,      0,       0,      1e-2,   0,     1,   1;    % lb
+                                  1,    0,      0,       0,      2e1,    10,    1,   1];    % ub
+        simParamSet.logspace =   [0,    0,     0,       0,       1,     0,     0,    0];
 
+                                
+    case {'Ql', 'Qgen'}
+        simParamSet.algo = 'Qlearning';
+                    % params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
+        simParamSet.param_bnds = [0,     0,    0,       0,      1e-2,   0,     0; 
+                                   1,    0,      0,       0,     2e1,    10,    1];
+        simParamSet.logspace =    [0,    0,     0,       0,       1,     0,     0];
+
+    case {'GPCs'}
+        simParamSet.algo = 'GPspace';
+                      % params    lambda  ucb_w, rnd_w, sty_w, time_scale
+        simParamSet.param_bnds = [1e-2,   0,   1e-2,   0,     100;    % lb
+                                    2,     0,   2,    10,    100];  % ub
+        simParamSet.logspace =    [0,     0,      1,     0,     0];
+end
 %% recovery fit settings
 % fitParams.algo, fitParams.kfolds, fitParams.iters, fitParams.param_bnds, ...
 %    choices, rewards, narms, fitParams.optim, fitParams.linear_env, fitParams.rnd_flag
@@ -34,6 +51,7 @@ fitParamSet.iters = 1;
 fitParamSet.optim = 'bads';
 fitParamSet.linear_env = 1;
 fitParamSet.rnd_flag = 0;
+fitParamSet.crossval = 'none';
 
 
 %% specify param bounds for recovery
@@ -42,11 +60,11 @@ switch char(fit_type)
         % Q-learning with generalisation (discrete)
         fitParamSet.algo = 'Qlearning';
         % params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-        param_bnds = [0,     0,       0,       0,      1e-2,   0,     0;    % lb
+        param_bnds = [0,     1e-2,       0,       0,      1e-2,   0,     0;    % lb
                      1,     3,       0,       0,      2e2,    10,    1;    % ub
-                     1e-2,  0,       0,       0,      1e-2,   0,     0;    % plb
+                     1e-2,  1e-2,       0,       0,      1e-2,   0,     0;    % plb
                       1,     3,       0,       0,      2e2,    10,    1;    % pub
-                     0.3,   0,       0,       0,       3,   0.8,     0.0]; % st
+                     0.3,   1,       0,       0,       3,   0.8,     0.0]; % st
         
     case 'Ql'
         % % Qlearning (discrete)
@@ -82,10 +100,10 @@ switch char(fit_type)
         fitParamSet.algo = 'BetaBayes';
         % params    lr_max  lambda, decay, ucb2_w, rnd_w,  sty_w,  a0,  b0
         param_bnds = [0,    0,      0,       0,      1e-3,   0,     1,   1;    % lb
-                        1,    0,      1,       1,      5e2,    10,    20,   20;    % ub
+                        1,    0,      0,       0,      20,    10,    1,   1;    % ub
                         0,    0,      0,       0,      1e-2,   0,     1,   1;    % plb
-                        1,    0,      1,       1,      5e2,    10,    5,   5;    % pub
-                        0.7,  0,      0.2,     0.09,   38,     2.5,   1,   1];   % st
+                        1,    0,      0,       0,      20,    10,    1,   1;    % pub
+                        0.7,  0,      0,     0,       2,     2.5,   1,   1];   % st
     
     case 'BBgen'
         % % BetaBayes with generalisation (discrete)
@@ -105,7 +123,7 @@ tic()
 
 %% saving the params
 t = datetime('now', 'Format', 'yyyyMMdd_HHmmss');
-filename = sprintf('%s_%s_%s_%s.m', t, fit_type, optim);
+filename = sprintf('%s_%s_%s_%s.mat', t, fit_type, fitParamSet.optim, num2str(fitParamSet.iters));
 save(fullfile("~/behavioralAnalysis/matlabModelFitting/output/sim/", filename), "simParams", "recParams")
 toc()
 

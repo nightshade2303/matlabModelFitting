@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J paramRec        #job_name
 #SBATCH -N 1                 # number of nodes
-#SBATCH -c 8            # number of cores
+#SBATCH -c 16            # number of cores
 #SBATCH --mem 16000          # memory for all cores
-#SBATCH -t 0-12:00           # time (D-HH:MM)
+#SBATCH -t 0-24:00           # time (D-HH:MM)
 #SBATCH --export=ALL
 #SBATCH -o /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/sim/Jobs/%x_%a_%A.%N.%j.out     # STDOUT
 #SBATCH -e /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/sim/Jobs/%x_%a_%A.%N.%j.err     # STDERR

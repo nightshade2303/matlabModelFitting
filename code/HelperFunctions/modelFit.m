@@ -1,14 +1,14 @@
 function [fit_nll, fit_pR2, fit_params, fit_bic, fit_aic, fit_st] = modelFit(algo, iters, param_bnds, choices, rewards, num_choices, optim, linear_env, rnd_flag)
 
-if nargin < 8
+if nargin < 7
     optim = 'bads';
 end
 
-if nargin < 9
+if nargin < 8
     linear_env = 0;
 end
 
-if nargin < 10
+if nargin < 9
     rnd_flag = 0;
 end
 
