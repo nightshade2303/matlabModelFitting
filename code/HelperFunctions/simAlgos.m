@@ -72,7 +72,7 @@ switch algo
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0;cumsum(choice_probs)]),1); % make a random choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a random choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)); % determine reward based on probability                
             end
         end
@@ -138,7 +138,7 @@ switch algo
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0;cumsum(choice_probs)]),1); % make a choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)); % determine reward based on probability                
             end
         end
@@ -199,7 +199,7 @@ switch algo
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref));  % softmax
                 choice_probs(choice_probs==0) = eps;
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0;cumsum(choice_probs).']),1); % make a choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)); % determine reward based on probability 
             end
         end
@@ -264,7 +264,7 @@ switch algo
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref));
                 choice_probs(choice_probs==0) = eps;
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0;cumsum(choice_probs)]),1); % make a choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)); % determine reward based on probability 
             end
         end
@@ -313,7 +313,7 @@ switch algo
                 end
                 choice_probs(choice_probs == 0) = eps;
                 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0;cumsum(choice_probs)]),1); % make a choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)); % determine reward based on probability 
 
             end

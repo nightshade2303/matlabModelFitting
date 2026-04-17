@@ -9,7 +9,7 @@ addpath('./fminsearchbnd/');
 % load("./Data/hMABdat.mat","hMABall");
 
 %% specify algo
-fit_type = "BB";
+fit_type = "BBgen";
 
 %% simulation settings
 n_reps = 100;
@@ -23,8 +23,8 @@ switch char(fit_type)
     case {'BB', 'BBgen'}
         simParamSet.algo = 'BetaBayes';
                    % params    lr_max  lambda, decay, ucb2_w, rnd_w,  sty_w,  a0,  b0
-        simParamSet.param_bnds = [0,    0,      0,       0,      1e-2,   0,     1,   1;    % lb
-                                  1,    0,      0,       0,      2e1,    10,    1,   1];    % ub
+        simParamSet.param_bnds = [0,    1e-2,      0,     0,   1e-2,   0,     1,   1;    % lb
+                                  1,    2,      0,       1,      2e1,    10,    1,   1];    % ub
         simParamSet.logspace =   [0,    0,     0,       0,       1,     0,     0,    0];
 
                                 
@@ -109,11 +109,11 @@ switch char(fit_type)
         % % BetaBayes with generalisation (discrete)
         fitParamSet.algo = 'BetaBayes';
         % params    lr_max  lambda, decay, ucb2_w, rnd_w,  sty_w,  a0,  b0
-        param_bnds = [0,    1e-3,   0,       0,      1e-3,   0,     1,   1;    % lb
-                        1,    10,     1,       1,      5e2,    10,    20,   20;    % ub
-                        0,    0.5,    0,       0,      1e-2,   0,     1,   1;    % plb
-                        1,    4,      1,       1,      5e2,    10,    5,   5;    % pub
-                        0.7,  0.2,    0.2,     0.09,   38,     2.5,   1,   1];   % st
+        param_bnds = [0,    1e-2,   0,       0,      1e-2,   0,     1,   1;    % lb
+                        1,    3,     0,       1,      20,    10,    1,   1;    % ub
+                        0,    1e-2,   0,      0,     1e-2,   0,     1,   1;    % plb
+                        1,    3,      0,       1,      20,    10,    1,   1;    % pub
+                        0.7,  0.5,    0,     0.09,     2,     2.5,   1,   1];   % st
 
 end
 fitParamSet.param_bnds = param_bnds;
