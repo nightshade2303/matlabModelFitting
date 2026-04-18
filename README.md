@@ -1,6 +1,5 @@
-## Reinforcement learning-based model fitting, parameter recovery and model recovery 
+## RL-based model fitting, parameter recovery and model recovery 
  - Largely created by and adapted from Ashesh's repo on hMAB fitting
- - first decent MATLAB project
 
 ## Setup 
 Any recent MATLAB release (2023b onwards should be fine)

@@ -12,7 +12,7 @@ addpath('./fminsearchbnd/');
 fit_type = "BBgen";
 
 %% simulation settings
-n_reps = 10;
+n_reps = 100;
 n_rounds = 200;
 simParamSet = struct;
 simParamSet.rprobset = generateRProbSet(n_rounds, 4, true);
