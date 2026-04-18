@@ -12,7 +12,7 @@ addpath('./fminsearchbnd/');
 fit_type = "BBgen";
 
 %% simulation settings
-n_reps = 1;
+n_reps = 10;
 n_rounds = 200;
 simParamSet = struct;
 simParamSet.rprobset = generateRProbSet(n_rounds, 4, true);
@@ -22,31 +22,31 @@ simParamSet.linear_env = 1;
 
 switch char(fit_type)
     case {'BB', 'BBgen'}
-        param_names = {'lr', 'ls', 'decay','a0', 'b0', 'ucb', 'invtemp', 'sticky', 'st_l'};
+        param_names = {'lr', 'ls', 'decay','a0', 'b0', 'ucb', 'invtemp', 'sticky', 'localpol'};
         simParamSet.algo = 'BayesUCB';
-                   % params    lr_max  lambda, decay, a0,    b0,  ucb2_w, rnd_w,  sty_w,  sty_l,  b0
+                   % params    lr_max  lambda, decay, a0,  b0,  ucb2_w, rnd_w, sty_w,  localpol
         simParamSet.param_bnds = [1,    1e-2,    0,   1,   1,    0,      1e-2,   0,     1e-2;    % lb
-                                  1,    2,      0,     1,    1,    1,      2e1,    10,    2];    % ub
-        simParamSet.logspace =   [0,    0,     0,      0,    0,    0,       0,     0,     0];
+                                  1,    2,       0,   1,   1,    1,      2e1,    10,    2];    % ub
+        simParamSet.logspace =   [0,    0,       0,   0,   0,    0,       0,     0,     0];
 
                                 
     case {'Ql', 'Qgen'}
-        param_names = {'lr', 'ls', 'decay', 'ucb', 'invtemp', 'sticky', 'q0'};
+        param_names = {'lr', 'lenscale', 'decay', 'q0', 'ucb', 'invtemp', 'sticky', 'localpol'};
 
         simParamSet.algo = 'Qlearning';
-                    % params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-        simParamSet.param_bnds = [0,     0,    0,       0,      1e-2,   0,     0; 
-                                   1,    0,      0,       0,     2e1,    10,    1];
-        simParamSet.logspace =    [0,    0,     0,       0,       1,     0,     0];
+                    % params     lr_max  lambda, q_decay, q0, ucb1_w, rnd_w, sty_w, localpol
+        simParamSet.param_bnds = [0,     0,       0,     0,    0,      1e-2,   0,     0; 
+                                   1,    0,       0,     1,     0,     2e1,    10,    1];
+        simParamSet.logspace =    [0,    0,       0,     0,     0,       0,     0,     0];
 
     case {'GPCs'}
         % untested
-        param_names = {'ls', 'ucb', 'invtemp', 'sticky', 'timescale'};
+        param_names = {'lenscale', 'timescale', 'ucb', 'invtemp', 'sticky', 'localpol'};
         simParamSet.algo = 'GPspace';
-                      % params    lambda  ucb_w, rnd_w, sty_w, time_scale
-        simParamSet.param_bnds = [1e-2,   0,   1e-2,   0,     100;    % lb
-                                    2,     0,   2,    10,    100];  % ub
-        simParamSet.logspace =    [0,     0,      1,     0,     0];
+                      % params    lambda  time, ucb_w, rnd_w, sty_w, localpol
+        simParamSet.param_bnds = [1e-2,  5,      0,      1e-3,   0,     1e-2;    % lb
+                                    5,   100,    10,     20,    15,     2 ];      % ub
+        simParamSet.logspace =    [0,     0,     0,      0,       0,      0];
 end
 %% recovery fit settings
 % fitParams.algo, fitParams.kfolds, fitParams.iters, fitParams.param_bnds, ...
@@ -62,64 +62,64 @@ fitParamSet.crossval = 'none';
 
 %% specify param bounds for recovery
 switch char(fit_type)
-    case 'Qgen'
-        % Q-learning with generalisation (discrete)
-        fitParamSet.algo = 'Qlearning';
-        % params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-        param_bnds = [0,     1e-2,       0,       0,      1e-2,   0,     0;    % lb
-                     1,     3,       0,       0,      2e2,    10,    1;    % ub
-                     1e-2,  1e-2,       0,       0,      1e-2,   0,     0;    % plb
-                      1,     3,       0,       0,      2e2,    10,    1;    % pub
-                     0.3,   1,       0,       0,       3,   0.8,     0.0]; % st
-        
     case 'Ql'
         % % Qlearning (discrete)
         fitParamSet.algo = 'Qlearning';
-        % params     lr_max  lambda, q_decay, ucb1_w, rnd_w, sty_w, q0
-        param_bnds = [0,     0,       0,       0,      1e-2,   0,     0;    % lb
-                      1,    0,       0,       0,      2e2,    10,    1;    % ub
-                      1e-2,  0,       0,       0,      1e-2,   0,     0;    % plb
-                      1,     0,       0,       0,      2e2,    10,    1;    % pub
-                      0.3,   0,       0,      0,      3,      0.8,      0]; % st
+        % params     lr_max  lambda, q_decay, q0, ucb1_w, rnd_w, sty_w, localpol
+        param_bnds = [0,     0,        0,     0,   0,     1e-2,   0,     0;    % lb
+                      1,     0,         0,     0,   0,      2e2,   10,    0;    % ub
+                     1e-2,   0,         0,     0,   0,     1e-2,   0,     0;    % plb
+                      1,      0,        0,     0,   0,      2e2,   10,    0;    % pub
+                     0.3,     0,        0,     0,   0,       3,    0.8,   0]; % st
+
+    case 'Qgen'
+        % Q-learning with generalisation (discrete)
+        fitParamSet.algo = 'Qlearning';
+        % params     lr_max  lambda, q_decay, q0, ucb1_w, rnd_w, sty_w, localpol
+        param_bnds = [0,     1e-2,      0,     0,   0,     1e-2,   0,     0;    % lb
+                      1,     3,         0,     0,   0,      2e2,   10,    0;    % ub
+                     1e-2,   1e-2,      0,     0,   0,     1e-2,   0,     0;    % plb
+                      1,      3,        0,     0,   0,      2e2,   10,    0;    % pub
+                     0.3,     1,        0,     0,   0,       3,    0.8,   0]; % st
     
     case 'GPCst'
         % % GPC spacetime (discrete)
-        fitParamSet.algo = 'GPspacetime_linear';
-        % params    lambda  ucb_w, rnd_w, sty_w, time_scale
-        param_bnds = [1e-2,   0,   1e-3,   0,     5;    % lb
-                        5,     10,   20,    15,    100;  % ub
-                        1e-1,   0,   1e-1,   0,     5;    % plb
-                        4,      5,   15,     5,    100;   % pub
-                        0.3,    0.4, 12.2,   2.3,  62];   % start  
+        fitParamSet.algo = 'GPspacetime';
+        % params    lambda  time, ucb_w, rnd_w, sty_w, localpol
+        param_bnds = [1e-2,  5,    0,   1e-3,   0,     1e-2;    % lb
+                       5,   100,  10,   20,    15,     2;        % ub
+                      1e-1,  5,    0,   1e-1,   0,     1e-1;    % plb
+                       4,   100,   5,   15,     5,      1;      % pub
+                      0.3,   62,  0.4,  12.2,   2.3,  0.5];    % start  
     case 'GPCs'
         % % GPC space (discrete)
-        fitParamSet.algo = 'GPspace_linear';
-        % params    lambda  ucb_w, rnd_w, sty_w, time_scale
-        param_bnds = [1e-2,   0,   1e-3,   0,     100;    % lb
-                        5,     10,   20,    15,    100;  % ub
-                        1e-1,   0,   1e-1,   0,     100;    % plb
-                        4,      5,   15,     5,    100;   % pub
-                        0.3,    0.4, 12.2,   2.3,  100];   % start  
+        fitParamSet.algo = 'GPspace';
+        % params    lambda  time, ucb_w, rnd_w, sty_w, localpol
+        param_bnds = [1e-2,  5,    0,   1e-3,   0,     1e-2;    % lb
+                       5,   100,  10,   20,    15,     2;        % ub
+                      1e-1,  5,    0,   1e-1,   0,     1e-1;    % plb
+                       4,   100,   5,   15,     5,      1;      % pub
+                      0.3,   62,  0.4,  12.2,   2.3,  0.5];    % start 
     
     case 'BB'
         % BetaBayes (discrete)
         fitParamSet.algo = 'BayesUCB';
-        % params    lr_max  lambda, decay, ucb2_w, rnd_w,  sty_w,  a0,  b0
-        param_bnds = [0,    0,      0,       0,      1e-3,   0,     1,   1;    % lb
-                        1,    0,      0,       1,      20,    10,    1,   1;    % ub
-                        0,    0,      0,       0,      1e-2,   0,     1,   1;    % plb
-                        1,    0,      0,       1,      20,    10,    1,   1;    % pub
-                        0.7,  0,      0,     0.1,       2,     2.5,   1,   1];   % st
+        % params    lr_max  lambda, decay, a0,  b0, ucb2_w, rnd_w,  sty_w, localpol 
+        param_bnds = [0,    0,      0,     1,   1,    0,     1e-3,   0,    0;    % lb
+                      1,    0,      0,     1,   1,    1,     20,    10,    0;    % ub
+                      0,    0,      0,     1,   1,    0,     1e-2,   0,    0;    % plb
+                      1,    0,      0,     1,   1,    1,     20,    10,    0;    % pub
+                      0.7,  0,      0,     1,   1,    0.1,   2,     2.5,   0];   % st
     
     case 'BBgen'
         % % BetaBayes with generalisation (discrete)
         fitParamSet.algo = 'BayesUCB';
-        % params    lr_max  lambda, decay, a0,  b0, ucb2_w, rnd_w,  sty_w, sty_l 
-        param_bnds = [0,    1e-2,   0,     1,   1,    0,     1e-3,   0,    1e-2;    % lb
-                      1,    3,      0,     1,   1,    1,     20,    10,    3;    % ub
-                      0,    1e-1,   0,     1,   1,    0,     1e-2,   0,    1e-1;    % plb
-                      1,    3,      0,     1,   1,    1,     20,    10,    3;    % pub
-                      0.7,  0.5,    0,     1,   1,    0.1,   2,     2.5,   0.3];   % st
+        % params    lr_max  lambda, decay, a0,  b0, ucb2_w, rnd_w,  sty_w, localpol
+        param_bnds = [0,    1e-2,   0,     1,   1,    0,     1e-3,   0,    0;    % lb
+                      1,    3,      0,     1,   1,    1,     20,    10,    0;    % ub
+                      0,    1e-1,   0,     1,   1,    0,     1e-2,   0,    0;    % plb
+                      1,    3,      0,     1,   1,    1,     20,    10,    0;    % pub
+                      0.7,  0.5,    0,     1,   1,    0.1,   2,     2.5,   0];   % st
 
 end
 fitParamSet.param_bnds = param_bnds;
