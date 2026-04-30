@@ -1,6 +1,19 @@
-function rFitResult = fitRatData(rMABpre, rFitParams, id)
+function rFitResult = fitRatData(rMABpre, rFitParamSet)
 
-subj = rFitParams.subjIndices(id);
+if ~isfield(rFitParamSet,'linear_env')
+    rFitParamSet.linear_env = 1; % Set default value for linear_env if not provided
+end
+
+if ~isfield(rFitParamSet,'rnd_flag')
+    rFitParamSet.rnd_flag = 0; % Set default value for rnd_flag if not provided
+end
+
+if ~isfield(rFitParamSet,'crossval')
+    rFitParamSet.crossval = 'kfold'; % Set default value for crossval if not provided
+end
+
+rng(1, 'twister');
+% n_subjects = numel(rFitParamSet.subjIndices);
 weeks = 4:8;
 
 % to fit first 100 trials of first block
@@ -18,13 +31,6 @@ end
 % to fit all blocks, all trials
 % trials = 1:size(rMABpre(subj).choices, 2);
 % rounds = {1:size(rMABpre(subj).choices, 1)};
-
-
-if ~isfield(rFitParams,'linear_env')
-    rFitParams.linear_env = 1; % Set default value for linear_env if not provided
-end
-
-rng(1, 'twister');
 
 disp(['Rat ' num2str(rMABpre(subj).ratName) ', Task ' rFitParams.task]);
 
@@ -44,10 +50,10 @@ switch rFitParams.task
             end
             
             [nll(1,rd), pR2(1,rd), params(1,rd,:)] = ...
-                crossValFit(rFitParams.algo, rFitParams.kfolds, rFitParams.iters, rFitParams.param_bnds, ...
+                fitModel(rFitParamSet, ...
                 rMABpre(subj).choices(rounds{rd}, trials), ...
                 rMABpre(subj).rewards(rounds{rd}, trials), ...
-                rMABpre(subj).narms, rFitParams.optim, rFitParams.linear_env, rFitParams.rnd_flag);
+                rMABpre(subj).narms);
         end
 
     % case '1D_Inter'

@@ -25,15 +25,16 @@ if ~isfield(simParamSet,'rnd_seed')
 end
 
 n_arms = size(simParamSet.rprobset,2);
-n_params = size(simParamSet.param_bnds,2);
+n_sim_params = size(simParamSet.param_bnds,2);
 log_params = simParamSet.logspace == 1;
+
 
 %% Sim loop
 
-simParams = zeros(n_reps,n_params);
+simParams = zeros(n_reps,n_sim_params);
 
 rng(simParamSet.rnd_seed, 'twister');
-rnd_nums = rand(n_reps,n_params);
+rnd_nums = rand(n_reps,n_sim_params);
 
 choices = zeros(simParamSet.n_rounds, simParamSet.n_trials, n_reps);
 rewards = zeros(simParamSet.n_rounds, simParamSet.n_trials, n_reps);
@@ -56,14 +57,14 @@ for rp = 1 : n_reps
     end
 
     % simulate choices and rewards
-    [choices(:,:,rp), rewards(:,:,rp)] = simAlgos(simParamSet.algo, simParams(rp,:), ...
-        simParamSet.n_rounds, simParamSet.n_trials, simParamSet.rprobset, simParamSet.linear_env);
+    [choices(:,:,rp), rewards(:,:,rp)] = simAlgos(simParamSet.algo, simParams(rp,:), simParamSet.n_rounds, simParamSet.n_trials, simParamSet.rprobset, simParamSet.linear_env);
     
 end
 
 %% Fitting loop
 
-recParams = zeros(n_reps,n_params);
+n_rec_params = size(fitParamSet.param_bnds,2);
+recParams = zeros(n_reps,n_rec_params);
 rec_nll = zeros(n_reps,1);
 rec_pR2 = zeros(n_reps,1);
 rec_aic = zeros(n_reps,1);
@@ -71,19 +72,6 @@ rec_bic = zeros(n_reps,1);
 
 % fitting loop over reps
 for rp = 1 : n_reps
-    if rp/10 == fix(rp/10); disp(rp); end
-    switch fitParamSet.crossval
-        case 'none'
-            % get best fit params (no cross-val)
-            [rec_nll(rp), rec_pR2(rp), recParams(rp,:), rec_aic(rp), rec_bic(rp)] = modelFit(fitParamSet.algo, fitParamSet.iters, ...
-                fitParamSet.param_bnds, choices(:,:,rp), rewards(:,:,rp), n_arms, fitParamSet.optim, fitParamSet.linear_env, fitParamSet.rnd_flag);
-        case 'kfold'
-            % get best fit params (with cross-val)
-            [rec_nll(rp), rec_pR2(rp), recParams(rp,:)] = crossValFit(fitParamSet.algo, fitParamSet.kfolds, fitParamSet.iters, ...
-                fitParamSet.param_bnds, choices(:,:,rp), rewards(:,:,rp), n_arms, fitParamSet.optim, fitParamSet.linear_env, fitParamSet.rnd_flag);
-        case 'looc'
-            % get best fit params (with leave one round out cross-val)
-            [rec_nll(rp), rec_pR2(rp), recParams(rp,:)] = looCrossValFit(fitParamSet.algo, fitParamSet.iters, ...
-                fitParamSet.param_bnds, choices(:,:,rp), rewards(:,:,rp), n_arms, fitParamSet.optim, fitParamSet.linear_env, fitParamSet.rnd_flag);
-    end
+    disp(['Rep ' num2str(rp)]);
+    [rec_nll(rp), rec_pR2(rp), recParams(rp,:), rec_bic(rp), rec_aic(rp)] = fitModel(fitParamSet, choices(:,:,rp), rewards(:,:,rp), n_arms);
 end

@@ -5,7 +5,7 @@ if nargin < 7
 end
 
 if nargin < 8
-    linear_env = 0;
+    linear_env = 1;
 end
 
 if nargin < 9
@@ -46,7 +46,7 @@ for i = 1 : iters
         st(i,:) = plb + (pub-plb).*rand(1,numel(plb)); % random start within plausible range
     end
 
-    % disp(['Iter ' num2str(i) ' of ' num2str(iters)]);
+    disp(['Iter ' num2str(i) ' of ' num2str(iters)]);
     switch optim
         case 'bads'
             iter_params(i,:) = bads(funNLL, st(i,:), lb, ub, plb, pub, [], options, ...

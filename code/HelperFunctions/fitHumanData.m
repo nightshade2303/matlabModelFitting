@@ -1,60 +1,69 @@
-function hFitResult = fitHumanData(hMABall, hFitParams, id)
+function hFitResult = fitHumanData(hMABall, hFitParamSet)
 
-subj = hFitParams.subjIndices(id);
-rounds = hFitParams.rounds;
+if ~isfield(hFitParamSet,'linear_env')
+    hFitParamSet.linear_env = 0; % Set default value for linear_env if not provided
+end
 
-if ~isfield(hFitParams,'linear_env')
-    hFitParams.linear_env = 0; % Set default value for linear_env if not provided
+if ~isfield(hFitParamSet,'rnd_flag')
+    hFitParamSet.rnd_flag = 0; % Set default value for rnd_flag if not provided
+end
+
+if ~isfield(hFitParamSet,'crossval')
+    hFitParamSet.crossval = 'kfold'; % Set default value for crossval if not provided
 end
 
 rng(1, 'twister');
+rounds = hFitParamSet.rounds;
+n_subjects = numel(hFitParamSet.subjIndices);
 
-disp(['Subject ' num2str(hMABall(subj).subjectID) ', Task ' hFitParams.task]);
-
-tic;
-switch hFitParams.task
+switch hFitParamSet.task
     case {'1D_Str','1D_Unstr','1D_Block','1D_ContBlock'}
-        nll = NaN(1,length(rounds));
-        pR2 = NaN(1,length(rounds));
-        params = NaN(1,length(rounds),size(hFitParams.param_bnds,2));
-        
-        for rd = 1 : length(rounds)
-            [nll(1,rd), pR2(1,rd), params(1,rd,:)] = ...
-                crossValFit(hFitParams.algo, hFitParams.kfolds, hFitParams.iters, hFitParams.param_bnds, ...
-                hMABall(subj).choices(rounds{rd}, hFitParams.trials), ...
-                hMABall(subj).rewards(rounds{rd}, hFitParams.trials), ...
-                hMABall(subj).narms, hFitParams.optim, hFitParams.linear_env, hFitParams.rnd_flag);
+
+        nll = NaN(n_subjects,length(rounds));
+        pR2 = NaN(n_subjects,length(rounds));
+        params = NaN(n_subjects,length(rounds),size(hFitParamSet.param_bnds,2));        
+
+        for id = 1 : n_subjects % loop over subjects
+            disp(['Subject ' num2str(id) ' of ' num2str(n_subjects)]);
+            subj = hFitParamSet.subjIndices(id);
+            for rd = 1 : length(rounds)
+                [nll(id,rd), pR2(id,rd), params(id,rd,:)] = ...
+                    fitModel(hFitParamSet, hMABall(subj).choices(rounds{rd}, hFitParamSet.trials),...
+                    hMABall(subj).rewards(rounds{rd}, hFitParamSet.trials), hMABall(subj).narms);               
+            end
         end
 
     case '1D_Inter'
-        nll = NaN(1,length(rounds),2); % dim 3: str/unstr
-        pR2 = NaN(1,length(rounds),2); % dim 3: str/unstr
-        params = NaN(1,length(rounds),size(hFitParams.param_bnds,2),2); % dim 4: str/unstr
 
-        for rd = 1 : length(rounds)
-            str_idx = hMABall(subj).structured(rounds{rd}) == 1; % identify structure rounds
-            % str rounds
-            [nll(1,rd,1), pR2(1,rd,1), params(1,rd,:,1)] = ...
-                crossValFit(hFitParams.algo, hFitParams.kfolds, hFitParams.iters, hFitParams.param_bnds, ...
-                hMABall(subj).choices(rounds{rd}(str_idx), hFitParams.trials), ...
-                hMABall(subj).rewards(rounds{rd}(str_idx), hFitParams.trials), ...
-                hMABall(subj).narms, hFitParams.optim, hFitParams.linear_env, hFitParams.rnd_flag);
-            % ustr rounds
-            [nll(1,rd,2), pR2(1,rd,2), params(1,rd,:,2)] = ...
-                crossValFit(hFitParams.algo, hFitParams.kfolds, hFitParams.iters, hFitParams.param_bnds, ...
-                hMABall(subj).choices(rounds{rd}(~str_idx), hFitParams.trials), ...
-                hMABall(subj).rewards(rounds{rd}(~str_idx), hFitParams.trials), ...
-                hMABall(subj).narms, hFitParams.optim, hFitParams.linear_env, hFitParams.rnd_flag);
+        nll = NaN(n_subjects,length(rounds),3); % dim 3: str/unstr/all
+        pR2 = NaN(n_subjects,length(rounds),3); % dim 3: str/unstr/all
+        params = NaN(n_subjects,length(rounds),size(hFitParamSet.param_bnds,2),3); % dim 4: str/unstr/all
+        
+        for id = 1 : n_subjects % loop over subjects
+            disp(['Subject ' num2str(id) ' of ' num2str(n_subjects)]);
+            subj = hFitParamSet.subjIndices(id);
+            for rd = 1 : length(rounds)
+                str_idx = hMABall(subj).structured(rounds{rd}) == 1; % identify structure rounds
+                % str rounds
+                [nll(id,rd,1), pR2(id,rd,1), params(id,rd,:,1)] = ...
+                    fitModel(fitParamSet, hMABall(subj).choices(rounds{rd}(str_idx), hFitParamSet.trials),...
+                    hMABall(subj).rewards(rounds{rd}(str_idx), hFitParamSet.trials), hMABall(subj).narms);   
+                % ustr rounds
+                [nll(id,rd,2), pR2(id,rd,2), params(id,rd,:,2)] = ...
+                    fitModel(fitParamSet, hMABall(subj).choices(rounds{rd}(~str_idx), hFitParamSet.trials),...
+                    hMABall(subj).rewards(rounds{rd}(~str_idx), hFitParamSet.trials), hMABall(subj).narms);   
+                % all rounds
+                [nll(id,rd,3), pR2(id,rd,3), params(id,rd,:,3)] = ...
+                    fitModel(fitParamSet, hMABall(subj).choices(rounds{rd}, hFitParamSet.trials),...
+                    hMABall(subj).rewards(rounds{rd}, hFitParamSet.trials), hMABall(subj).narms);   
+            end
         end
 end
-toc;
 
 hFitResult = struct;
 
-hFitResult.id = id;
-hFitResult.subjIndex = subj;
+hFitResult.subjIndices = hFitParamSet.subjIndices;
 hFitResult.nll = nll;
 hFitResult.pR2 = pR2;
 hFitResult.params = params;
-hFitResult.subjectID = hMABall(subj).subjectID;
-hFitResult.sess = hMABall(subj).session;
+hFitResult.sess = vertcat(hMABall(hFitParamSet.subjIndices).session);

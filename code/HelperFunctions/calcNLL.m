@@ -71,9 +71,9 @@ switch algo
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd; 
 
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
                 else
-                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec = zeros(num_choices,1);
                     sticky_vec(choices(rd,tr-1)) = sty_w;
                 end
         
@@ -142,9 +142,9 @@ switch algo
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd; 
 
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
                 else
-                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec = zeros(num_choices,1);
                     sticky_vec(choices(rd,tr-1)) = sty_w;
                 end
         
@@ -259,9 +259,9 @@ switch algo
                 rpe = (rewards(rd,tr-1) - q_a(choices(rd,tr-1)));
 
                 % q values decay towards 0 (except previously chosen action)
-                % q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-0); 
+                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-0); 
                 
-                q_a = q_a - q_decay*(q_a-0);    % all q-values decay             
+                % q_a = q_a - q_decay*(q_a-0);    % all q-values decay             
                 
                 % Q learning    
                 if gen_l > 0
@@ -423,3 +423,5 @@ end
 
 % report total NLL
 nll_tot = sum(nll_mat(:),1,"omitmissing");
+
+

@@ -32,4 +32,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code
 
 # $MATLAB_BIN -nodisplay -nosplash -nodesktop -r "fitRatDataRCwrapper('/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/data/','/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/$1/', ${SLURM_ARRAY_TASK_ID});exit"
-$MATLAB_BIN -nodisplay -nosplash -nodesktop -r "runParamRecovery;exit"
+# $MATLAB_BIN -nodisplay -nosplash -nodesktop -r "runParamRecovery;exit"
+$MATLAB_BIN -nodisplay -nosplash -nodesktop -r "paramRecoveryRCwrapper('/mnt/pve/Homes/ashesh/Results/MAB/paramrec/$1/$2_${SLURM_ARRAY_TASK_ID}');exit"

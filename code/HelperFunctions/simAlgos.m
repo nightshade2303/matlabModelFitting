@@ -75,9 +75,9 @@ switch algo
                 
                 % sticky
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
                 else
-                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec = zeros(num_choices,1);
                     sticky_vec(choices(rd,tr-1)) = sty_w;
                 end
                 
@@ -86,7 +86,7 @@ switch algo
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a random choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs')]),1); % make a random choice for the current trial
                 rewards(rd, tr) = 2*(rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)))-1; % determine reward based on probability                
             end
         end
@@ -151,9 +151,9 @@ switch algo
                 
                 % sticky
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
                 else
-                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec = zeros(num_choices,1);
                     sticky_vec(choices(rd,tr-1)) = sty_w;
                 end
                 
@@ -162,7 +162,7 @@ switch algo
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
 
-                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs')]),1); % make a choice for the current trial
                 rewards(rd, tr) = 2*(rand_nums(rd,tr,2) < rew_probs(rd, choices(rd, tr)))-1; % determine reward based on probability                
             end
         end
@@ -377,3 +377,7 @@ switch algo
         end
 
 end
+
+
+
+
