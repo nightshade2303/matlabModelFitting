@@ -2,7 +2,7 @@
 
 %% save directory
 
-savedir = '..\r_recovery\';
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_recovery/';
 
 %% Load envs dataset
 % what is this?
@@ -16,7 +16,7 @@ addpath('./HelperFunctions/');
 
 %% make save folder
 
-savefolder = [char(datetime("now","Format","yyyyMMdd")), '_',  'modelRec',  '\'];
+savefolder = [char(datetime("now","Format","yyyyMMdd")), '_',  'modelRec',  '/'];
 savepath = [savedir, savefolder];
     
 if exist(savepath, 'dir') ~= 7
@@ -36,11 +36,11 @@ rounds = [200];
 % Sim param set
 mySimParamSet = struct;
 mySimParamSet.rnd_seed = 1;
-% mySimParamSet.rprobset = generateRProbSet(n_rounds, 4, false); task = 'str'; % structured
-mySimParamSet.rprobset = generateRProbSet(n_rounds, 4, true); task = 'unstr'; % unstructured
 mySimParamSet.linear_env = 1;
 mySimParamSet.n_rounds = 200;
 mySimParamSet.n_trials = 100;
+% mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, false); task = 'str'; % structured
+mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, true); task = 'unstr'; % unstructured
 
 % Fit params set
 myFitParamSet = struct;
@@ -51,7 +51,7 @@ myFitParamSet.iters = 5;
 myFitParamSet.linear_env = 1;
 myFitParamSet.rnd_flag = 0;
 
-modelList = ["Qs","Qgs","Bus","Busl", "Gs", "Gus"];
+modelList = ["Qs","Qgs","Qsl","B","Bus","Busl"];
 for simModel = modelList    
     
     simParamSet = mySimParamSet; % Copy simulation parameters
@@ -69,7 +69,7 @@ for simModel = modelList
         recName = ['sim-', char(simModel), '_fit-' char(recModel)];
 
         % format sbatch command
-        cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=%s ../../paramRec_submit.sh %s %s', ...
+        cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=%s ../../rParamRec_submit.sh %s %s', ...
             char(simModel),char(recModel),rounds_str,savefolder(1:end-1),recName);
         disp(cmd);
         

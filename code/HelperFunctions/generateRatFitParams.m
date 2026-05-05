@@ -1,4 +1,4 @@
-% generateHumanFitParams.m
+% generateRatFitParams.m
 
 %% Load dataset
 
@@ -32,51 +32,27 @@ rFitParams.task = '4ABunstr';
 % fitName = 'str';
 % rFitParams.task = '4ABstr';
 
-% fitName = 'str_s1_rds';
-% hFitParams.task = '1D_Str';
-% hFitParams.sess = 1;
-% hFitParams.rounds = {1:5, 6:10, 11:15, 16:20, 21:25, 26:30, 31:34}; % binned rounds
-% 
-% fitName = 'ustr_s1_rds';
-% hFitParams.task = '1D_Unstr';
-% hFitParams.sess = 1;
-% hFitParams.rounds = {1:5, 6:10, 11:15, 16:20, 21:25, 26:30, 31:34}; % binned rounds
-% 
-% fitName = 'str_s2_rds';
-% hFitParams.task = '1D_Str';
-% hFitParams.sess = 2;
-% hFitParams.rounds = {1:5, 6:10, 11:15, 16:20, 21:25, 26:30, 31:34}; % binned rounds
-% 
-% fitName = 'ustr_s2_rds';
-% hFitParams.task = '1D_Unstr';
-% hFitParams.sess = 2;
-% hFitParams.rounds = {1:5, 6:10, 11:15, 16:20, 21:25, 26:30, 31:34}; % binned rounds
-% 
-% fitName = 'ustr_s2';
-% hFitParams.task = '1D_Unstr';
-% hFitParams.sess = 2;
-% hFitParams.rounds = {1:34};                                       % all rounds
-% 
-% fitName = 'str_s2';
-% hFitParams.task = '1D_Str';
-% hFitParams.sess = 2;
-% hFitParams.rounds = {1:34};                                       % all rounds
-% 
-% fitName = 'inter';
-% hFitParams.rounds = {1:10, 11:25};
-% hFitParams.task = '1D_Inter';
-% hFitParams.sess = 1;
+% info about fitting
+rFitParams.crossval = 'kfold';
+rFitParams.optim = 'bads'; % 'bads' or 'fmin'
+rFitParams.kfolds = 4;
+rFitParams.iters = 5;
+rFitParams.linear_env = 1;
+rFitParams.rnd_flag = 0;
 
-% fitName = 'block';
-% hFitParams.rounds = {1:5, 6:10, 11:15, 18:22, 23:27, 28:32};
-% hFitParams.sess = 1;
-% hFitParams.task = '1D_Block';
+%% Find subj/sess list
+
+% specify subject indices - if 4ABunstr in task list then select those animals
+subjIndices = find(contains({rMABpre.task}, rFitParams.task));
+% subjIndices = find(contains({rMABstr.task}, rFitParams.task));
+
+rFitParams.subjIndices = subjIndices;
 
 
 %% Algo and fit details
 
 % for algoName = ["Qgen","Ql", "GPCst","GPCs", "BB", "BBgen"]
-for algoName = ["BB", "BBgen"]
+for algoName = ["Ql", "Qgen", "BB", "BBgen", "GPCs"]
     switch char(algoName)
         case 'Qgen'
             % Q-learning with generalisation (discrete)
@@ -135,29 +111,6 @@ for algoName = ["BB", "BBgen"]
     end
     
     rFitParams.param_bnds = param_bnds;
-    rFitParams.kfolds = 4;
-    rFitParams.iters = 5;
-    rFitParams.linear_env = 1;
-    rFitParams.optim = 'bads'; % 'bads' or 'fmin'
-    rFitParams.rnd_flag = 0;
-    
-    %% Find subj/sess list
-    
-    % switch hFitParams.task
-    %     case '1D_Inter'
-    %         subjIndices = find(contains({hMABall.task}, hFitParams.task) ...
-    %         & cellfun(@(x) sum(x)/numel(x), {hMABall.structured}) == 0.5 ...
-    %         & [hMABall.session] == hFitParams.sess);
-    %     otherwise
-    %         subjIndices = find(contains({hMABall.task}, hFitParams.task) ...
-    %             & [hMABall.session] == hFitParams.sess);
-    % end
-
-    % specify how to get subject indices - if 4ABunstr in task list then select those animals
-    subjIndices = find(contains({rMABpre.task}, rFitParams.task));
-    % subjIndices = find(contains({rMABstr.task}, rFitParams.task));
-
-    rFitParams.subjIndices = subjIndices;
     
     
     %% save fit params

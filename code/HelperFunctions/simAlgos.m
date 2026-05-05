@@ -1,7 +1,7 @@
 function [choices, rewards, rew_probs, latent_vars] = simAlgos(algo, params, n_rounds, n_trials, rprobset, linear_env)
 
 if nargin < 6
-    linear_env = 0;
+    linear_env = 1;
 end
 
 num_choices = size(rprobset,2);
@@ -377,7 +377,3 @@ switch algo
         end
 
 end
-
-
-
-

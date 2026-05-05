@@ -1,19 +1,23 @@
-function hFitResult = fitHumanDataRCwrapper(dataPath,fitPath,subj_id)
+function hFitResult = fitHumanDataRCwrapper(dataPath, fitPath)
 %fitHumanDataRCwrapper load params file, data file and save fits
 
 addpath('./HelperFunctions/');
-addpath(genpath('./bads-master/'));
 
 % load fitParams
-load([fitPath,'hFitParams'], 'hFitParams');
+load([fitPath,'.mat'], 'hFitParamSet');
+
+c
 
 % load dataset
 load([dataPath,'hMABdat.mat'], 'hMABall');
 
+tic;
 % fit session
-hFitResult = fitHumanData(hMABall, hFitParams, subj_id);
+hFitResult = fitHumanData(hMABall, hFitParamSet);
+disp('Fits completed.');
+toc;
 
 % save result
-save([fitPath,'hFit_' num2str(subj_id)], 'hFitResult');
+save([fitPath,'_result.mat'], 'hFitResult');
 
 end

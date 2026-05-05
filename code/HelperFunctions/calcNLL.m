@@ -2,7 +2,7 @@ function [nll_tot, nll_mat, latent_vars] = calcNLL(params, algo, choices, reward
 % Calculate NLL for param and algo choice
 
 if nargin < 6
-    linear_env = 0;
+    linear_env = 1;
 end
 
 n_rounds = size(choices,1);

@@ -5,11 +5,11 @@
 # cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260427_unstr_all_rats_block1_BBgen/Jobs/
 # sbatch -J unstr_BBgen -t 0-10:00 --array=1-43 ../../rMAB_submit.sh 20260427_unstr_all_rats_block1_BBgen
 
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260427_unstr_all_rats_block1_Ql/Jobs/
-# sbatch -J unstr_ql -t 0-10:00 --array=1-43 ../../rMAB_submit.sh 20260427_unstr_all_rats_block1_Ql
+cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260505_unstr_all_rats_block1_Ql/Jobs/
+sbatch -J unstr_ql -t 0-10:00 --array=1-43 ../../rMAB_submit.sh 20260505_unstr_all_rats_block1_Ql
 
-cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260427_unstr_all_rats_block1_Qgen/Jobs/
-sbatch -J unstr_qgen -t 0-10:00 --array=1-43 ../../rMAB_submit.sh 20260427_unstr_all_rats_block1_Qgen
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260427_unstr_all_rats_block1_Qgen/Jobs/
+# sbatch -J unstr_qgen -t 0-10:00 --array=1-43 ../../rMAB_submit.sh 20260427_unstr_all_rats_block1_Qgen
 
 # cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260427_unstr_all_rats_block1_GPCs/Jobs/
 # sbatch -J unstr_gpc -t 15-00:00:00 --array=21-43 ../../rMAB_submit.sh 20260427_unstr_all_rats_block1_GPCs
