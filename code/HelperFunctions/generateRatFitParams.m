@@ -52,16 +52,16 @@ rFitParams.subjIndices = subjIndices;
 %% Algo and fit details
 
 % for algoName = ["Qgen","Ql", "GPCst","GPCs", "BB", "BBgen"]
-for algoName = ["Ql", "Qgen", "BB", "BBgen", "GPCs"]
+for algoName = ["Ql", "Qgen","Qlocal", "ALR", "BB", "BBlocal", "GPCs"]
     switch char(algoName)
         case 'Qgen'
             % Q-learning with generalisation (discrete)
             rFitParams.algo = 'Qlearning';
             % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
-            param_bnds = [0,    1e-2,     0,       0.5,    0,     1e-2,   0,     0;    % lb
-                          1,    5,        0,       0.5,    0,      2e1,    10,    0;    % ub
-                          1e-2, 1e-2,     0,       0.5,    0,      1e-2,   0,     0;    % plb
-                          1,    5,        0,       0.5,    0,      2e1,    10,    0;    % pub
+            param_bnds = [0,    0,       0,       0.5,    0,     1e-2,   0,     0;    % lb
+                          1,    3,        0.5,     0.5,    0,      2e1,    4,    0;    % ub
+                          1e-2, 0,        0,       0.5,    0,      1e-2,   0,     0;    % plb
+                          1,    3,        0.5,     0.5,    0,      2e1,    4,    0;    % pub
                           0.2,  1,        0,       0.5,    0,        1,      2,     0]; % st
             
 
@@ -70,10 +70,20 @@ for algoName = ["Ql", "Qgen", "BB", "BBgen", "GPCs"]
             rFitParams.algo = 'Qlearning';
             % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
             param_bnds = [0,    0,       0,       0.5,    0,     1e-2,   0,     0;    % lb
-                          1,    0,       0,       0.5,    0,      2e1,    10,    0;    % ub
+                          1,    0,       0.5,     0.5,    0,      2e1,    4,    0;    % ub
                           1e-2, 0,       0,       0.5,    0,      1e-2,   0,     0;    % plb
-                          1,    0,       0,       0.5,    0,      2e1,    10,    0;    % pub
+                          1,    0,       0.5,     0.5,    0,      2e1,    4,    0;    % pub
                           0.2,  0,       0,       0.5,    0,        1,      2,     0]; % st
+
+        case 'Qlocal'
+            % % Qlearning (discrete)
+            rFitParams.algo = 'Qlearning';
+            % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
+            param_bnds = [0,    0,       0,        0.5,    0,     1e-2,   0,     0;    % lb
+                          1,    0,       0.5,      0.5,    0,      2e1,    4,    3;    % ub
+                          1e-2, 0,       0,        0.5,    0,      1e-2,   0,     0;    % plb
+                          1,    0,       0.5,      0.5,    0,      2e1,    4,    3;    % pub
+                          0.2,  0,       0,        0.5,    0,        1,      2,     0]; % st
         
         
         case 'GPCs'
@@ -81,32 +91,41 @@ for algoName = ["Ql", "Qgen", "BB", "BBgen", "GPCs"]
             rFitParams.algo = 'GPspace';
             % params    lambda  time_scale, ucb_w, rnd_w, sty_w, localpol
             param_bnds = [1e-2,  100,       0,      1e-2,     0,       0;    % lb
-                          5,     100,      10,      2e1,     10,       0;  % ub
-                          1e-2,   100,       0,     1e-2,     0,        0;    % plb
-                          5,     100,       10,     2e1,      10,       0;   % pub
-                          1,     100,      2.2,        1,      2,       0];   % start  
+                          5,     100,      1,      2e1,     10,       0;  % ub
+                          1e-2,   100,      0,     1e-2,     0,        0;    % plb
+                          5,     100,       1,     2e1,      10,       0;   % pub
+                          1,     100,      0.2,        1,      2,       0];   % start  
         
+        case 'ALR'
+            % BetaBayes (discrete)
+            rFitParams.algo = 'BayesUCB';
+            % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
+            param_bnds = [1,    0,      0,     1,   1,   0,     1e-2,     0,   0;    % lb
+                          1,    0,      0,     1,   1,   0,    2e1,     10,   0;    % ub
+                          1,    0,      0,     1,   1,   0,    1e-2,     0,   0;    % plb
+                          1,    0,      0,     1,   1,   0,    2e1,     10,   0;    % pub
+                          1,    0,      0,     1,   1,   0,     1,      2,   0];   % st
         
         case 'BB'
             % BetaBayes (discrete)
             rFitParams.algo = 'BayesUCB';
             % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
             param_bnds = [1,    0,      0,     1,   1,   0,     1e-2,     0,   0;    % lb
-                          1,    0,      0,     1,   1,   10,    2e1,     10,   0;    % ub
+                          1,    0,      0,     1,   1,   1,    2e1,     10,   0;    % ub
                           1,    0,      0,     1,   1,    0,    1e-2,     0,   0;    % plb
-                          1,    0,      0,     1,   1,   10,    2e1,     10,   0;    % pub
-                          1,    0,      0,     1,   1,   2.2,     1,      2,   0];   % st
+                          1,    0,      0,     1,   1,   1,    2e1,     10,   0;    % pub
+                          1,    0,      0,     1,   1,   0.2,     1,      2,   0];   % st
         
         
-        case 'BBgen'
+        case 'BBlocal'
             % % BetaBayes with generalisation (discrete)
             rFitParams.algo = 'BayesUCB';
             % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
-            param_bnds = [1,    1e-2,     0,   1,   1,   0,     1e-2,     0,   0;    % lb
-                          1,    5,        0,   1,   1,   10,    2e1,     10,   0;    % ub
-                          1,    1e-2,     0,   1,   1,    0,    1e-2,     0,   0;    % plb
-                          1,    5,        0,   1,   1,   10,    2e1,     10,   0;    % pub
-                          1,    1,        0,   1,   1,   2.2,     1,      2,   0];   % st
+            param_bnds = [1,    0,        0,   1,   1,   0,     1e-2,     0,   0;    % lb
+                          1,    0,        0,   1,   1,   1,    2e1,     10,   3;    % ub
+                          1,    0,        0,   1,   1,    0,    1e-2,     0,   0;    % plb
+                          1,    0,        0,   1,   1,   1,    2e1,     10,   3;    % pub
+                          1,    0,        0,   1,   1,   0.2,     1,      2,   1];   % st
     
     end
     

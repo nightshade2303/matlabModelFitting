@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J rMABfit #job_name
-#SBATCH --nodelist=server1                 # number of nodes
+#SBATCH --nodelist=server2                 # number of nodes
 #SBATCH -c 8            # number of cores
 #SBATCH --mem 16000          # memory for all cores
 #SBATCH -t 0-12:00           # time (D-HH:MM)

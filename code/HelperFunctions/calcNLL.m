@@ -120,12 +120,12 @@ switch algo
         latent_vars = NaN(n_rounds, n_trials, num_choices, 2); % mu and sd of gaussian process
 
         for rd = 1 : n_rounds
-            [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], ...
-                [(1:num_choices)', ones(num_choices,1)]);
-            mu = 1./(1+exp(-lmu));
-            ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
-            sd = ucb-mu;
-            latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd;
+            % [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], ...
+            %     [(1:num_choices)', ones(num_choices,1)]);
+            % mu = 1./(1+exp(-lmu));
+            % ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
+            % sd = ucb-mu;
+            % latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd;
 
             for tr = 2 : n_trials
                 if isnan(choices(rd,tr))

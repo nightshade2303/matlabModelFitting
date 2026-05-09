@@ -31,27 +31,27 @@ end
 %% Define simulation and recovery model sets
 
 n_reps = 100;
-rounds = [200];
+rounds = [10];
 
 % Sim param set
 mySimParamSet = struct;
 mySimParamSet.rnd_seed = 1;
 mySimParamSet.linear_env = 1;
-mySimParamSet.n_rounds = 200;
+mySimParamSet.n_rounds = 10;
 mySimParamSet.n_trials = 100;
 % mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, false); task = 'str'; % structured
 mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, true); task = 'unstr'; % unstructured
 
 % Fit params set
 myFitParamSet = struct;
-myFitParamSet.crossval = 'kfold';
+myFitParamSet.crossval = 'none';
 myFitParamSet.optim = 'bads';
 myFitParamSet.kfolds = 4;
 myFitParamSet.iters = 5;
 myFitParamSet.linear_env = 1;
 myFitParamSet.rnd_flag = 0;
 
-modelList = ["Qs","Qgs","Qsl","B","Bus","Busl"];
+modelList = ["Q","Qs","Qgs","Qsl", "Qgsl", "Qdgsl", "B", "Bs","Bsl", "Bus","Busl", "Bdusl", "G", "Gs", "Gsl", "Gus", "Gusl", "Gdus", "Gdusl"];
 for simModel = modelList    
     
     simParamSet = mySimParamSet; % Copy simulation parameters

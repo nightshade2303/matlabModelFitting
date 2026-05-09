@@ -5,8 +5,8 @@
 #SBATCH --mem 16000          # memory for all cores
 #SBATCH -t 0-24:00           # time (D-HH:MM)
 #SBATCH --export=ALL
-#SBATCH -o /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/sim/Jobs/%x_%a_%A.%N.%j.out     # STDOUT
-#SBATCH -e /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/sim/Jobs/%x_%a_%A.%N.%j.err     # STDERR
+#SBATCH -o %x_%a_%A.%N.%j.out     # STDOUT this may not work so check
+#SBATCH -e %x_%a_%A.%N.%j.err     # STDERR
 
 # $1 is the fit date/folder name
  
