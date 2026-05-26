@@ -55,11 +55,11 @@ switch algo
             choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); % make a random choice on the first trial
             rewards(rd, 1) = 2*(rand_nums(rd,1,2) < rew_probs(rd, choices(rd,1)))-1; % determine reward based on probability
 
-            [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], (1:num_choices)');
-            mu = 1./(1+exp(-lmu));
-            ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
-            sd = ucb-mu;
-            latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd;
+            % [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], (1:num_choices)');
+            % mu = 1./(1+exp(-lmu));
+            % ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
+            % sd = ucb-mu;
+            % latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd;
 
             % loop over trials
             for tr = 2 : n_trials
@@ -130,12 +130,12 @@ switch algo
             % make a random choice on the first trial
             choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); 
             rewards(rd, 1) = 2*(rand_nums(rd,1,2) < rew_probs(rd,choices(rd,1)))-1; % determine reward based on probability
-            [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], ...
-                [(1:num_choices)', ones(num_choices,1)]);
-            mu = 1./(1+exp(-lmu));
-            ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
-            sd = ucb-mu;
-            latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd; 
+            % [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], ...
+            %     [(1:num_choices)', ones(num_choices,1)]);
+            % mu = 1./(1+exp(-lmu));
+            % ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
+            % sd = ucb-mu;
+            % latent_vars(rd,1,:,1) = mu; latent_vars(rd,1,:,2) = sd; 
 
             % loop over trials
             for tr = 2 : n_trials

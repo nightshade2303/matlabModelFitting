@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH -J rMABfit #job_name
-#SBATCH -N 1                 # number of nodes
+#SBATCH -N 1                 # number of nodes per job 
+#SBATCh --nodelist=server[2-3]   # which nodes to pick?
 #SBATCH -c 8            # number of cores
 #SBATCH --mem 16000          # memory for all cores
 #SBATCH -t 0-12:00           # time (D-HH:MM)
@@ -31,4 +32,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code
 
-$MATLAB_BIN -nodisplay -nosplash -nodesktop -r "fitRatDataRCwrapper('/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/data/','/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/$1/', ${SLURM_ARRAY_TASK_ID});exit"
+$MATLAB_BIN -nodisplay -nosplash -nodesktop -r "fitRatDataRCwrapper('/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/data/','/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/$1/', ${SLURM_ARRAY_TASK_ID});exit"

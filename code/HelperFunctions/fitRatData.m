@@ -18,16 +18,33 @@ rng(1, 'twister');
 weeks = 4:8;
 
 % to fit first 100 trials of first block
-atleast_trials = 100;
-trials = 1:100;
+% atleast_trials = 100;
+% trials = 1:100;
+% sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
+% % sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
+% if size(sess_idx, 1)>1
+%     selected_blocks = sess_idx(any(rMABpre(subj).blockIDs(sess_idx, trials)'==1));
+%     rounds = {selected_blocks'};
+% else
+%     rounds = {};
+% end
+
+% to fit first n trials of any session, regardless of blocking
+atleast_trials = 300; 
+trials = 1:300;
 sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
-% sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
-if size(sess_idx, 1)>1
-    selected_blocks = sess_idx(any(rMABpre(subj).blockIDs(sess_idx, trials)'==1));
-    rounds = {selected_blocks'};
-else
-    rounds = {};
-end
+% get every 5th of a random sampling
+% N = length(sess_idx);
+
+% % Get indices for 1/5th (20%) of the data randomly
+% numSamples = round(N/5);
+% randomIndices = randperm(N, numSamples);
+
+% % Extract the samples
+% sampledData = sess_idx(randomIndices);
+
+% rounds = {sampledData};
+rounds = {sess_idx};
 
 % to fit all blocks, all trials
 % trials = 1:size(rMABpre(subj).choices, 2);
@@ -42,41 +59,36 @@ switch rFitParams.task
         pR2 = NaN(1,length(rounds));
         params = NaN(1,length(rounds),size(rFitParams.param_bnds,2));
         
-        for rd = 1 : length(rounds)
-            % check number of sessions, should be more than number of folds
-            if size(rounds{1}, 2) < rFitParams.kfolds
-            % if size(rounds, 2)< rFitParams.kfolds
-                disp("Number of sessions too low.");
-                break;
-            end
-            
-            [nll(1,rd), pR2(1,rd), params(1,rd,:)] = ...
-                fitModel(rFitParams, ...
-                rMABpre(subj).choices(rounds{rd}, trials), ...
-                rMABpre(subj).rewards(rounds{rd}, trials), ...
-                rMABpre(subj).narms);
+        switch rFitParams.crossval
+            case 'none'
+                aic = NaN(1, length(rounds));
+                bic = NaN(1, length(rounds));
+
+                for rd = 1 : length(rounds)
+                    
+                    [nll(1,rd), pR2(1,rd), params(1,rd,:), bic(1,rd), aic(1,rd)] = ...
+                        fitModel(rFitParams, ...
+                        rMABpre(subj).choices(rounds{rd}, trials), ...
+                        rMABpre(subj).rewards(rounds{rd}, trials), ...
+                        rMABpre(subj).narms);
+                end
+
+            otherwise
+                for rd = 1 : length(rounds)
+                    % check number of sessions, should be more than number of folds
+                    if size(rounds{1}, 2) < rFitParams.kfolds
+                    % if size(rounds, 2)< rFitParams.kfolds
+                        disp("Number of sessions too low.");
+                        break;
+                    end
+                    
+                    [nll(1,rd), pR2(1,rd), params(1,rd,:)] = ...
+                        fitModel(rFitParams, ...
+                        rMABpre(subj).choices(rounds{rd}, trials), ...
+                        rMABpre(subj).rewards(rounds{rd}, trials), ...
+                        rMABpre(subj).narms);
+                end
         end
-
-    % case '1D_Inter'
-    %     nll = NaN(1,length(rounds),2); % dim 3: str/unstr
-    %     pR2 = NaN(1,length(rounds),2); % dim 3: str/unstr
-    %     params = NaN(1,length(rounds),size(hFitParams.param_bnds,2),2); % dim 4: str/unstr
-
-    %     for rd = 1 : length(rounds)
-    %         str_idx = hMABall(subj).structured(rounds{rd}) == 1; % identify structure rounds
-    %         % str rounds
-    %         [nll(1,rd,1), pR2(1,rd,1), params(1,rd,:,1)] = ...
-    %             crossValFit(hFitParams.algo, hFitParams.kfolds, hFitParams.iters, hFitParams.param_bnds, ...
-    %             hMABall(subj).choices(rounds{rd}(str_idx), hFitParams.trials), ...
-    %             hMABall(subj).rewards(rounds{rd}(str_idx), hFitParams.trials), ...
-    %             hMABall(subj).narms, hFitParams.optim, hFitParams.linear_env, hFitParams.rnd_flag);
-    %         % ustr rounds
-    %         [nll(1,rd,2), pR2(1,rd,2), params(1,rd,:,2)] = ...
-    %             crossValFit(hFitParams.algo, hFitParams.kfolds, hFitParams.iters, hFitParams.param_bnds, ...
-    %             hMABall(subj).choices(rounds{rd}(~str_idx), hFitParams.trials), ...
-    %             hMABall(subj).rewards(rounds{rd}(~str_idx), hFitParams.trials), ...
-    %             hMABall(subj).narms, hFitParams.optim, hFitParams.linear_env, hFitParams.rnd_flag);
-    %     end
 end
 toc;
 
@@ -89,3 +101,8 @@ rFitResult.pR2 = pR2;
 rFitResult.params = params;
 rFitResult.ratName = rMABpre(subj).ratName;
 % rFitResult.sess = rMABall(subj).session; % field does not exist
+switch rFitParams.crossval  
+    case 'none'
+        rFitResult.aic = aic;
+        rFitResult.bic = bic;
+end
