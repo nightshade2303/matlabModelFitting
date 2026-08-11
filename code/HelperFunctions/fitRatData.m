@@ -15,36 +15,42 @@ end
 subj = rFitParams.subjIndices(id);
 rng(1, 'twister');
 % n_subjects = numel(rFitParams.subjIndices);
-weeks = 4:8;
+% weeks = 4:8;
 
 % to fit first 100 trials of first block
-% atleast_trials = 100;
-% trials = 1:100;
+atleast_trials = 100;
+trials = 1:100;
 % sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
-% % sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
-% if size(sess_idx, 1)>1
-%     selected_blocks = sess_idx(any(rMABpre(subj).blockIDs(sess_idx, trials)'==1));
-%     rounds = {selected_blocks'};
-% else
-%     rounds = {};
-% end
+sess_idx = find(rMABpre(subj).weekOfTraining>=4 & rMABpre(subj).trialNums>=atleast_trials);
+
+% sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
+if size(sess_idx, 1)>1
+    selected_blocks = sess_idx(any(rMABpre(subj).blockIDs(sess_idx, trials)'==1));
+    rounds = {selected_blocks'};
+else
+    rounds = {};
+end
 
 % to fit first n trials of any session, regardless of blocking
-atleast_trials = 300; 
-trials = 1:300;
-sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
+% atleast_trials = 300; 
+% trials = 1:300;
+% sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
 % get every 5th of a random sampling
 % N = length(sess_idx);
-
 % % Get indices for 1/5th (20%) of the data randomly
 % numSamples = round(N/5);
 % randomIndices = randperm(N, numSamples);
-
 % % Extract the samples
 % sampledData = sess_idx(randomIndices);
-
 % rounds = {sampledData};
-rounds = {sess_idx};
+% select 30 random sessions from dataset
+% if length(sess_idx)>30
+%     sess_idx = randsample(sess_idx, 30);
+% else
+%     disp('Not enough sessions');
+%     sess_idx = [];
+% end
+% rounds = {sess_idx};
 
 % to fit all blocks, all trials
 % trials = 1:size(rMABpre(subj).choices, 2);

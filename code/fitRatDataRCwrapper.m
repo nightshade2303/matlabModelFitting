@@ -14,11 +14,13 @@ switch rFitParams.optim
 end
 
 % load dataset
-load([dataPath,'rMABpre_20260513.mat'], 'rMABpre');
-% load([dataPath,'rMABdat_20260212.mat'], 'rMABpre');
+% load([dataPath,'rMABstr_20260529.mat'], 'rMABpre');
+load([dataPath,'rMABdat_20260212.mat'], 'rMABpre');
+% load([dataPath,'rMABdat_20260212.mat'], 'rMABlesions');
 
 % fit session
 % rFitResult = fitRatData(rMABstr, rFitParams, subj_id);
+% rFitResult = fitRatData(rMABlesions, rFitParams, subj_id);
 rFitResult = fitRatData(rMABpre, rFitParams, subj_id);
 
 % save result
