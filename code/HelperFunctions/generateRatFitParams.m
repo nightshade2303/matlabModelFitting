@@ -21,13 +21,13 @@ end
 
 rFitParams = struct;
 
-savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260811_block1_unstr_rats/';
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260815_allblock_unstr_rats/';
 
 slurm_file = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh';  % change this maybe?
 
 %% Task, sess and round structure
 
-fitName = 'ub_bl1';
+fitName = 'ub_all';
 rFitParams.task = '4ABunstr';
 % rFitParams.rounds = {1:100};
 % trials and sessions are defined individually for each animal in fitRatData.m
@@ -66,7 +66,8 @@ rFitParams.subjIndices = subjIndices;
 
 
 %% Algo and fit details
-modelList = ["Qdsl", "Qdgsl"];
+% modelList = ["Qdsl", "Qdgsl"];
+modelList = ["Is", "Isl"];
 % modelList = ["Q","Qs","Qsl","Qd","Qds","Qdsl","Qg","Qgs","Qgsl","Qdg","Qdgs","Qdgsl",...
 %              "B","Bs","Bsl","Bd","Bds","Bdsl","Bu","Bus","Busl","Bdu","Bdus","Bdusl"];
 % modelList =               ["G","Gs","Gsl","Gd","Gds","Gdsl","Gu","Gus","Gusl","Gdu","Gdus","Gdusl"];
@@ -107,87 +108,7 @@ for fitModel = modelList
     %% format sbatch command
     cmd = sprintf('cd %s/Jobs/', savepath(1:end - 1));
     disp(cmd);
-    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-9 %s %s/%s', ...
-        char(fitData),char(fitModel),char(slurm_file),'20260625_presham_unstr_rats',savefolder(1:end-1));
+    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-10 %s %s/%s', ...
+        char(fitData),char(fitModel),char(slurm_file),'20260815_allblock_unstr_rats',savefolder(1:end-1));
     disp(cmd);
 end
-
-
-% for algoName = ["Qgen","Ql", "GPCst","GPCs", "BB", "BBgen"]
-% for algoName = ["Ql", "Qgen","Qlocal", "ALR", "BB", "BBlocal", "GPCs"]
-%     switch char(algoName)
-%         case 'Qgen'
-%             % Q-learning with generalisation (discrete)
-%             rFitParams.algo = 'Qlearning';
-%             % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
-%             param_bnds = [0,    0,       0,       0.5,    0,     1e-2,   0,     0;    % lb
-%                           1,    3,        0.5,     0.5,    0,      2e1,    4,    0;    % ub
-%                           1e-2, 0,        0,       0.5,    0,      1e-2,   0,     0;    % plb
-%                           1,    3,        0.5,     0.5,    0,      2e1,    4,    0;    % pub
-%                           0.2,  1,        0,       0.5,    0,        1,      2,     0]; % st
-            
-
-%         case 'Ql'
-%             % % Qlearning (discrete)
-%             rFitParams.algo = 'Qlearning';
-%             % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
-%             param_bnds = [0,    0,       0,       0.5,    0,     1e-2,   0,     0;    % lb
-%                           1,    0,       0.5,     0.5,    0,      2e1,    4,    0;    % ub
-%                           1e-2, 0,       0,       0.5,    0,      1e-2,   0,     0;    % plb
-%                           1,    0,       0.5,     0.5,    0,      2e1,    4,    0;    % pub
-%                           0.2,  0,       0,       0.5,    0,        1,      2,     0]; % st
-
-%         case 'Qlocal'
-%             % % Qlearning (discrete)
-%             rFitParams.algo = 'Qlearning';
-%             % params     lr_max  lambda, q_decay, q0, ucb_w, rnd_w, sty_w, local
-%             param_bnds = [0,    0,       0,        0.5,    0,     1e-2,   0,     0;    % lb
-%                           1,    0,       0.5,      0.5,    0,      2e1,    4,    3;    % ub
-%                           1e-2, 0,       0,        0.5,    0,      1e-2,   0,     0;    % plb
-%                           1,    0,       0.5,      0.5,    0,      2e1,    4,    3;    % pub
-%                           0.2,  0,       0,        0.5,    0,        1,      2,     0]; % st
-        
-        
-%         case 'GPCs'
-%             % % GPC space (discrete)
-%             rFitParams.algo = 'GPspace';
-%             % params    lambda  time_scale, ucb_w, rnd_w, sty_w, localpol
-%             param_bnds = [1e-2,  100,       0,      1e-2,     0,       0;    % lb
-%                           5,     100,      1,      2e1,     10,       0;  % ub
-%                           1e-2,   100,      0,     1e-2,     0,        0;    % plb
-%                           5,     100,       1,     2e1,      10,       0;   % pub
-%                           1,     100,      0.2,        1,      2,       0];   % start  
-        
-%         case 'ALR'
-%             % BetaBayes (discrete)
-%             rFitParams.algo = 'BayesUCB';
-%             % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
-%             param_bnds = [1,    0,      0,     1,   1,   0,     1e-2,     0,   0;    % lb
-%                           1,    0,      0,     1,   1,   0,    2e1,     10,   0;    % ub
-%                           1,    0,      0,     1,   1,   0,    1e-2,     0,   0;    % plb
-%                           1,    0,      0,     1,   1,   0,    2e1,     10,   0;    % pub
-%                           1,    0,      0,     1,   1,   0,     1,      2,   0];   % st
-        
-%         case 'BB'
-%             % BetaBayes (discrete)
-%             rFitParams.algo = 'BayesUCB';
-%             % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
-%             param_bnds = [1,    0,      0,     1,   1,   0,     1e-2,     0,   0;    % lb
-%                           1,    0,      0,     1,   1,   1,    2e1,     10,   0;    % ub
-%                           1,    0,      0,     1,   1,    0,    1e-2,     0,   0;    % plb
-%                           1,    0,      0,     1,   1,   1,    2e1,     10,   0;    % pub
-%                           1,    0,      0,     1,   1,   0.2,     1,      2,   0];   % st
-        
-        
-%         case 'BBlocal'
-%             % % BetaBayes with generalisation (discrete)
-%             rFitParams.algo = 'BayesUCB';
-%             % params    lr_max  lambda, decay, a0, b0, ucb2_w, rnd_w,  sty_w,  local
-%             param_bnds = [1,    0,        0,   1,   1,   0,     1e-2,     0,   0;    % lb
-%                           1,    0,        0,   1,   1,   1,    2e1,     10,   3;    % ub
-%                           1,    0,        0,   1,   1,    0,    1e-2,     0,   0;    % plb
-%                           1,    0,        0,   1,   1,   1,    2e1,     10,   3;    % pub
-%                           1,    0,        0,   1,   1,   0.2,     1,      2,   1];   % st
-    
-%     end
-    

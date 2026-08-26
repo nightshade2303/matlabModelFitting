@@ -22,10 +22,11 @@ switch algo
         % unpack params
         gen_l = params(1); % length scale of GP
         time_l = floor(params(2)); % length of memory window (is an integer)
-        ucb_w = params(3); % weight of ucb param
-        rnd_w = params(4); % weight of random exploration (inverse softmax temp)
-        sty_w = params(5); % weight of sticky param
-        sty_l = params(6); % length scale of sticky process 
+        mu0 = params(3); % mean function
+        ucb_w = params(4); % weight of ucb param
+        rnd_w = params(5); % weight of random exploration (inverse softmax temp)
+        sty_w = params(6); % weight of sticky param
+        sty_l = params(7); % length scale of sticky process 
 
         % GP settings
         meanfunc = @meanConst;        
@@ -34,7 +35,7 @@ switch algo
 
         % gp constants
         sig_sd = 1;
-        mean_const = 0;
+        mean_const = log(mu0/(1-mu0));
         
         choice_vec = 1:num_choices;
         if linear_env == 0
@@ -99,10 +100,11 @@ switch algo
         % unpack params
         gen_l = params(1); % length scale of GP
         time_l = params(2); % time scale of GP
-        ucb_w = params(3); % weight of ucb2 param
-        rnd_w = params(4); % weight of random exploration (inverse softmax temp)
-        sty_w = params(5); % weight of sticky param
-        sty_l = params(6); % length scale of sticky process    
+        mu0 = params(3); % mean function
+        ucb_w = params(4); % weight of ucb2 param
+        rnd_w = params(5); % weight of random exploration (inverse softmax temp)
+        sty_w = params(6); % weight of sticky param
+        sty_l = params(7); % length scale of sticky process  
 
         % GP settings
         meanfunc = @meanConst;
@@ -111,7 +113,7 @@ switch algo
         
         % gp constants
         sig_sd = 1;
-        mean_const = 0;
+        mean_const = log(mu0/(1-mu0));
 
         choice_vec = 1:num_choices;
         if linear_env == 0
@@ -207,8 +209,8 @@ switch algo
 
                 rpe = (rewards(rd,tr-1) - q_a(choices(rd,tr-1)));
 
-                % q values decay towards 0 (except previously chosen action)
-                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-0); 
+                % q values decay towards q0 (except previously chosen action)
+                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0); 
 
                 % % q_a = q_a - q_decay*(q_a-0);       % all q-values decay                              
                                 
@@ -251,12 +253,14 @@ switch algo
         lr = params(1); % learning rate
         gen_l = params(2); % generalisation parameter
         b_decay = params(3); % decay rate
-        a0 = params(4); % initial a-value for beta distr
-        b0 = params(5); % initial b-value for beta distr
-        ucb_w = params(6); % weight of ucb param
-        rnd_w = params(7); % weight of random exploration (inverse softmax temp)
-        sty_w = params(8); % weight of sticky param        
-        sty_l = params(9);  % length scale of sticky process    
+        mu0 = params(4); % initial mean for beta distr        
+        ucb_w = params(5); % weight of ucb param
+        rnd_w = params(6); % weight of random exploration (inverse softmax temp)
+        sty_w = params(7); % weight of sticky param        
+        sty_l = params(8);  % length scale of sticky process  
+
+        a0 = 2*mu0; % initial a value for beta distribution
+        b0 = 2*(1-mu0); % initial b value for beta distribution 
 
         choice_vec = 1:num_choices;
         if linear_env == 0

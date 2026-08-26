@@ -460,6 +460,84 @@ switch algo
                 nll_mat(rd,tr-1) = -log(choice_prob(choices(rd,tr)));
             end
         end  
+
+    case 'StateInference'
+        %% Hidden-state inference model matching code/state_inference.py
+
+        % unpack params
+        gam = params(1);    % transition decay over distance between states (generalization?)
+        c = params(2);        % observation confidence / evidence strength
+        gen_l = params(3);  % generalzation length scale
+        rnd_w = params(4);    % softmax temperature 
+        sty_w = params(5);   % weight of sticky param        
+        sty_l = params(6);   % length scale of sticky process 
+    
+        if num_choices ~= 4
+            error('StateInference expects 4 choices, but received %d. Go write your own model.', num_choices);
+        end
+
+        choice_vec = 1:num_choices;
+        if linear_env == 0
+            dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
+        else
+            dist_mat = abs(choice_vec(:)-choice_vec);
+        end
+
+        b0 = ones(1, num_choices) / num_choices;
+        T = [0.25+0.75*gam, 0.25-0.25*gam, 0.25-0.25*gam, 0.25-0.25*gam;
+            0.25-0.25*gam, 0.25+0.75*gam, 0.25-0.25*gam, 0.25-0.25*gam;
+            0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam, 0.25-0.25*gam;
+            0.25-0.25*gam, 0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam];
+
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 2);
+
+        for rd = 1 : n_rounds
+            b = b0;  % set initial state of the beliefs
+
+            for tr = 2 : n_trials
+                if isnan(choices(rd, tr))
+                    break;
+                end
+
+                % prev_choice = zeros(1,num_choices);
+                % prev_choice(choices(rd,tr-1)) = 1;
+
+                latent_vars(rd, tr, :, 1) = b;
+
+                if sty_l > 0
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                else
+                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                end
+                
+                % calc gen 
+                if gen_l > 0
+                    c_val = (2*c*exp(-dist_mat(choices(rd, tr-1),:).^2 / (2*gen_l^2))) - c;
+                else
+                    c_val = zeros(1, num_choices);
+                    c_val(choices(rd, tr-1)) = c;
+                end
+
+                choice_pref = b.*rnd_w + sticky_vec;                % inv temp x preferences + sticky bonus
+                choice_pref = choice_pref - max(choice_pref);
+                choice_prob = exp(choice_pref) / sum(exp(choice_pref));
+                latent_vars(rd, tr, :, 2) = choice_prob;
+
+                nll_mat(rd, tr-1) = -log(choice_prob(choices(rd, tr)));
+
+                l = stateInferenceLikelihood(choices(rd, tr), rewards(rd, tr), c_val, num_choices);
+                b_post = l .* b;
+
+                if sum(b_post) > 0
+                    b_post = b_post / sum(b_post);
+                else
+                    b_post = b;
+                end
+
+                b = b_post * T;
+            end
+        end
         
     case 'WSLS'
         %%
@@ -512,7 +590,9 @@ switch algo
             end
         end
         
-end
+    end
 
 % report total NLL
 nll_tot = sum(nll_mat(:),1,"omitmissing");
+
+end

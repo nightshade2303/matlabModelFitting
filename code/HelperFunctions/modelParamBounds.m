@@ -25,6 +25,10 @@ blr_b = [1;1]; % lr for BetaBayes
 t_b = [5;200]; % time_l
 mem_b = [5000;5000]; % max memory for GP space
 
+% SI specific
+c = [-1;1];
+gam = [0;1];
+
 % Q-learning + Beta-Bayes
 d_b = [0;1]; % decay
 
@@ -122,6 +126,25 @@ elseif contains(modelName,"G")
         end
         if contains(modelName,"l")
             param_bnds(:,7) = sl_b;
+        end
+
+elseif contains(modelName,"I")
+        % index          1      2          3         4 5 6
+        param_names = ["gamma","c","lambda","beta", "sty", "sty-lambda"];
+        algo = 'StateInference';
+        param_bnds = zeros(2,length(param_names));
+        param_bnds(:, 1) = gam;
+        param_bnds(:, 2) = c;
+        param_bnds(:, 4) = rnd_b;
+        
+        if contains(modelName, "g")
+            param_bnds(:,3) = g_b;
+        end  
+        if contains(modelName,"s")
+            param_bnds(:,5) = s_b;
+        end
+        if contains(modelName,"l")
+            param_bnds(:,6) = sl_b;
         end
 end
 
