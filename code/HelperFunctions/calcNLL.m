@@ -112,8 +112,14 @@ switch algo
             hyp = struct('mean', mean_const, 'cov', [gen_l, num_choices, time_l, sig_sd]);
             dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
         else
-            covfunc = @covSEard;
-            hyp = struct('mean', mean_const, 'cov', log([gen_l, time_l, sig_sd]));
+            covfunc = {@covProd, { ...
+                {@covMask, {[1 0], @covSEisoU}}, ...
+                {@covMask, {[0 1], {@covMaterniso, 1}}} ...
+            }};
+            hyp = struct( ...
+                'mean', mean_const, ...
+                'cov',  [log(gen_l), log(time_l), log(sig_sd)] ...
+            );
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
@@ -272,7 +278,7 @@ switch algo
                 rpe = (rewards(rd,tr-1) - q_a(choices(rd,tr-1)));
 
                 % q values decay towards 0 (except previously chosen action)
-                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0); 
+                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0(prev_choice==0)); 
                 
                 % q_a = q_a - q_decay*(q_a-0);    % all q-values decay             
                 
@@ -538,6 +544,45 @@ switch algo
                 b = b_post * T;
             end
         end
+
+    case 'Local'
+
+        choice_vec = 1:num_choices;
+        if linear_env == 0
+            dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
+        else
+            dist_mat = abs(choice_vec(:)-choice_vec);
+        end
+        % unpack params
+        sty_w = params(1); % sticky param
+        sty_l = params(2); % sticky local
+
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 2);
+        
+        for rd = 1 : n_rounds
+            for tr = 2 : n_trials
+                if isnan(choices(rd,tr))
+                    break;
+                end
+
+                % latent_vars(rd, tr, :, 1) = b;
+
+                if sty_l > 0
+                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                else
+                    sticky_vec = zeros(1,num_choices);
+                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                end
+
+                choice_pref = sticky_vec;                % inv temp x preferences + sticky bonus
+                choice_pref = choice_pref - max(choice_pref);
+                choice_prob = exp(choice_pref) / sum(exp(choice_pref));
+                latent_vars(rd, tr, :, 1) = choice_prob;
+
+                nll_mat(rd, tr-1) = -log(choice_prob(choices(rd, tr)));
+            end
+        end
+
         
     case 'WSLS'
         %%

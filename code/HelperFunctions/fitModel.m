@@ -66,7 +66,7 @@ switch fitParamSet.crossval
                 st(i,:) = plb + (pub-plb).*rand(1,numel(plb)); % random start within plausible range
             end
         
-            % disp(['Iter ' num2str(i) ' of ' num2str(iters)]);
+            disp(['Iter ' num2str(i) ' of ' num2str(iters)]);
             switch fitParamSet.optim
                 case 'bads'
                     iter_params(i,:) = bads(funNLL, st(i,:), lb, ub, plb, pub, [], options, ...

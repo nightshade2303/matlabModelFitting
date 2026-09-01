@@ -67,7 +67,7 @@ rFitParams.subjIndices = subjIndices;
 
 %% Algo and fit details
 % modelList = ["Qdsl", "Qdgsl"];
-modelList = ["Is", "Isl"];
+modelList = ["4dsl", "4dgsl", "4dgs"];
 % modelList = ["Q","Qs","Qsl","Qd","Qds","Qdsl","Qg","Qgs","Qgsl","Qdg","Qdgs","Qdgsl",...
 %              "B","Bs","Bsl","Bd","Bds","Bdsl","Bu","Bus","Busl","Bdu","Bdus","Bdusl"];
 % modelList =               ["G","Gs","Gsl","Gd","Gds","Gdsl","Gu","Gus","Gusl","Gdu","Gdus","Gdusl"];
