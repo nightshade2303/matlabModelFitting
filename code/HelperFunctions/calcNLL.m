@@ -84,7 +84,7 @@ switch algo
                 if sty_l > 0                    
                     sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = sty_w * h_a;
+                    sticky_vec = sty_w * h_a';
                 end
                 
                 choice_pref = (mu + ucb_w*sd)*rnd_w + sticky_vec;
@@ -179,7 +179,7 @@ switch algo
                 if sty_l > 0                    
                     sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = sty_w * h_a;
+                    sticky_vec = sty_w * h_a';
                 end
                 latent_vars(rd,tr,:,3) = sticky_vec;
         
