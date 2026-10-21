@@ -21,7 +21,8 @@ switch algo
         ucb_w = params(4); % weight of ucb param
         rnd_w = params(5); % weight of random exploration (inverse softmax temp)
         sty_w = params(6); % weight of sticky param
-        sty_l = params(7); % length scale of sticky process    
+        lr_sty = params(7); % learning rate of sticky process
+        sty_l = params(8); % length scale of sticky process    
        
         % GP settings
         meanfunc = @meanConst;        
@@ -47,10 +48,10 @@ switch algo
 
         rewards(rewards==0) = -1; % for GP classification 
 
-        latent_vars = NaN(n_rounds, n_trials, num_choices, 2); % mu and sd of gaussian process
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 3); % mu and sd of gaussian process, h_a
 
         for rd = 1 : n_rounds
-            
+            h_a = zeros(1,num_choices);
             % [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], (1:num_choices)');
             % mu = 1./(1+exp(-lmu));
             % ucb = 1./(1+exp(-(lmu+2*sqrt(ls2))));
@@ -71,13 +72,21 @@ switch algo
 
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd; 
 
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = zeros(num_choices,1);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
-        
+                
                 choice_pref = (mu + ucb_w*sd)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_prob = exp(choice_pref) / sum(exp(choice_pref)); % softmax
@@ -95,7 +104,12 @@ switch algo
         ucb_w = params(4); % weight of ucb2 param
         rnd_w = params(5); % weight of random exploration (inverse softmax temp)
         sty_w = params(6); % weight of sticky param
-        sty_l = params(7); % length scale of sticky process        
+        lr_sty = params(7); % learning rate of sticky process
+        sty_l = params(8); % length scale of sticky process 
+
+        if time_l < 1
+            time_l = 1/time_l; % convert from decay rate to time-constant
+        end
 
         % GP settings
         meanfunc = @meanConst;
@@ -112,22 +126,27 @@ switch algo
             hyp = struct('mean', mean_const, 'cov', [gen_l, num_choices, time_l, sig_sd]);
             dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
         else
-            covfunc = {@covProd, { ...
-                {@covMask, {[1 0], @covSEisoU}}, ...
-                {@covMask, {[0 1], {@covMaterniso, 1}}} ...
-            }};
-            hyp = struct( ...
-                'mean', mean_const, ...
-                'cov',  [log(gen_l), log(time_l), log(sig_sd)] ...
-            );
+            % covfunc = {@covProd, { ...
+            %     {@covMask, {[1 0], @covSEisoU}}, ...
+            %     {@covMask, {[0 1], {@covMaterniso, 1}}} ...
+            % }};
+            % hyp = struct( ...
+            %     'mean', mean_const, ...
+            %     'cov',  [log(gen_l), log(time_l), log(sig_sd)] ...
+            % );
+            % dist_mat = abs(choice_vec(:)-choice_vec);
+            covfunc = @cov_SElinearExpTime;
+            hyp = struct('mean', mean_const, 'cov', [gen_l, num_choices, time_l, sig_sd]); 
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
         rewards(rewards==0) = -1; % for GP classification 
         
-        latent_vars = NaN(n_rounds, n_trials, num_choices, 2); % mu and sd of gaussian process
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 3); % mu and sd of gaussian process, h_a
 
         for rd = 1 : n_rounds
+            h_a = zeros(1,num_choices);
+
             % [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, [], [], ...
             %     [(1:num_choices)', ones(num_choices,1)]);
             % mu = 1./(1+exp(-lmu));
@@ -139,6 +158,7 @@ switch algo
                 if isnan(choices(rd,tr))
                     break;
                 end
+                % gdmusl
                 [~, ~, lmu, ls2] = gp(hyp, infmethod, meanfunc, covfunc, likfunc, ...
                     [choices(rd,1:tr-1)', (1:tr-1)'], rewards(rd,1:tr-1)', ...
                     [(1:num_choices)', ones(num_choices,1)*tr]);
@@ -149,12 +169,19 @@ switch algo
 
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd; 
 
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
+               % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = zeros(num_choices,1);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
+                latent_vars(rd,tr,:,3) = sticky_vec;
         
                 choice_pref = (mu + ucb_w*sd)*rnd_w + sticky_vec; 
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
@@ -181,13 +208,15 @@ switch algo
         ucb_w = params(5);  % weight of ucb1 param
         rnd_w = params(6);  % weight of random exploration (inverse softmax temp)
         sty_w = params(7);  % weight of sticky param
-        sty_l = params(8);  % length scale of sticky process    
+        lr_sty = params(8); % learning rate of sticky process
+        sty_l = params(9);  % length scale of sticky process    
 
-        latent_vars = NaN(n_rounds, n_trials, num_choices, 2); % q values and ucb-1 term
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 3); % q values and ucb-1 term, h_a
 
         for rd = 1 : n_rounds
             q_a = zeros(1,num_choices)+q0; % initialise q-values to q0
             n_a = zeros(1,num_choices)+1;
+            h_a = zeros(1,num_choices);
             latent_vars(rd,1,:,1) = q_a; latent_vars(rd,1,:,2) = 0;
 
             for tr = 2 : n_trials
@@ -213,20 +242,28 @@ switch algo
                     q_a(choices(rd,tr-1)) = q_a(choices(rd,tr-1)) + lr_max * rpe;
                 end        
                 
-                clip(q_a, 0, 1);    
+                q_a = clip(q_a, 0, 1);    
+
+                %  update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty *(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+
+                % latent_vars(rd,tr,:,3) = h_a;
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
+                else
+                    sticky_vec = sty_w * h_a;
+                end
 
                 n_a(choices(rd,tr-1)) = n_a(choices(rd,tr-1))+1;
                 u_a = sqrt(2*log(tr-1) ./ n_a);
                 
                 latent_vars(rd,tr,:,1) = q_a; latent_vars(rd,tr,:,2) = u_a;
-
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
-                else
-                    sticky_vec = zeros(1,num_choices);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
-                end
-        
+                latent_vars(rd, tr, :, 3) = sticky_vec;
                 choice_pref = (q_a + ucb_w*u_a)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref);  % to avoid overflow errors in softmax
                 choice_prob = exp(choice_pref) / sum(exp(choice_pref));  % softmax
@@ -400,8 +437,9 @@ switch algo
         mu0 = params(4); % initial mean for beta distr        
         ucb_w = params(5); % weight of ucb param
         rnd_w = params(6); % weight of random exploration (inverse softmax temp)
-        sty_w = params(7); % weight of sticky param        
-        sty_l = params(8);  % length scale of sticky process    
+        sty_w = params(7); % weight of sticky param  
+        lr_sty = params(8); % learning rate of sticky process      
+        sty_l = params(9);  % length scale of sticky process    
 
         choice_vec = 1:num_choices;
         if linear_env == 0
@@ -413,12 +451,12 @@ switch algo
         a0 = 2*mu0; % initial a value for beta distribution
         b0 = 2*(1-mu0); % initial b value for beta distributio
 
-        latent_vars = zeros(n_rounds, n_trials, num_choices, 2); % beta distr mean and sd
+        latent_vars = zeros(n_rounds, n_trials, num_choices, 3); % beta distr mean and sd, h_a
 
         for rd = 1 : n_rounds
             S = zeros(1,num_choices);
             F = zeros(1,num_choices);
-
+            h_a = zeros(1,num_choices);
             beta_m0 = a0./(a0+b0); beta_sd0 = sqrt(beta_m0.*(1-beta_m0)./(a0+b0+1));
             latent_vars(rd,1,:,1) = beta_m0; latent_vars(rd,1,:,2) = beta_sd0;
         
@@ -452,12 +490,20 @@ switch algo
                 beta_sd = sqrt(beta_m.*(1-beta_m)./(as+bs+1));     
                 latent_vars(rd,tr,:,1) = beta_m; latent_vars(rd,tr,:,2) = beta_sd;
 
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
                 else
-                    sticky_vec = zeros(1,num_choices);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
+
+                latent_vars(rd,tr,:,3) = sticky_vec;
                         
                 choice_pref = (beta_m + ucb_w*beta_sd)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref);
@@ -475,8 +521,9 @@ switch algo
         c = params(2);        % observation confidence / evidence strength
         gen_l = params(3);  % generalzation length scale
         rnd_w = params(4);    % softmax temperature 
-        sty_w = params(5);   % weight of sticky param        
-        sty_l = params(6);   % length scale of sticky process 
+        sty_w = params(5);   % weight of sticky param      
+        lr_sty = params(6); % learning rate of sticky process     
+        sty_l = params(7);   % length scale of sticky process 
     
         if num_choices ~= 4
             error('StateInference expects 4 choices, but received %d. Go write your own model.', num_choices);
@@ -495,10 +542,11 @@ switch algo
             0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam, 0.25-0.25*gam;
             0.25-0.25*gam, 0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam];
 
-        latent_vars = NaN(n_rounds, n_trials, num_choices, 2);
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 3);
 
         for rd = 1 : n_rounds
             b = b0;  % set initial state of the beliefs
+            h_a = zeros(1,num_choices);
 
             for tr = 2 : n_trials
                 if isnan(choices(rd, tr))
@@ -508,13 +556,21 @@ switch algo
                 % prev_choice = zeros(1,num_choices);
                 % prev_choice(choices(rd,tr-1)) = 1;
 
-                latent_vars(rd, tr, :, 1) = b;
+                latent_vars(rd, tr, :, 1) = b; 
 
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
                 else
-                    sticky_vec = zeros(1,num_choices);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
                 
                 % calc gen 

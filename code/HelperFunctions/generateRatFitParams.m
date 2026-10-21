@@ -4,7 +4,7 @@
 
 % unstructured dataset
 if exist("rMABpre","var") ~= 1
-    load("../../data/rMABdat_20260212.mat", "rMABpre");
+    load("../../data/rMABpre_20261003.mat", "rMABpre");
 end
 
 % structured dataset
@@ -21,9 +21,10 @@ end
 
 rFitParams = struct;
 
-savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20260815_allblock_unstr_rats/';
-
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_unstr_rats/';
+% savedir = '/n/home09/dhawale/Rishika/output/r_fits/20260912_allblock_unstr_rats/';
 slurm_file = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh';  % change this maybe?
+% slurm_file = '/n/home09/dhawale/Rishika/output/r_fits/rMAB_submit.sh';
 
 %% Task, sess and round structure
 
@@ -48,29 +49,60 @@ rFitParams.linear_env = 1;
 rFitParams.rnd_flag = 0;
 
 %% Find subj/sess list
-blocked_rats = {'Ivysaur', 'Jigglypuff', 'Vanillish', 'Whismur', 'Zorua', 'Emolga', 'Giratina', 'Lugia', 'Quaxly', 'Uxie'};
-unblocked_rats = {'Inkay', 'Kirlia', 'Mesprit', 'Quilava', 'Raltz', 'Hoppip', 'Oddish', 'Phione', 'Goldeen', 'Jirachi'};
-str_rats = {'HSB_F_006','HSB_F_007','HSB_F_008', 'HSB_F_009', 'HSB_F_010','HSB_F_011','HSB_F_012', 'HSB_F_013', 'HSB_F_014'};
-dls_ub_rats = {'Torchic', 'Uxie', 'Vanillish', 'Yamper', 'Zorua'};
-dls_uu_rats = {'Blissey', 'Darkrai', 'Inkay', 'Mesprit', 'Quilava', 'Raltz', 'Zacian', 'Alakazam'};
-dls_rats = {'Torchic', 'Uxie', 'Vanillish', 'Yamper', 'Zorua', 'Blissey', 'Darkrai', 'Inkay', 'Mesprit', 'Quilava', 'Raltz', 'Zacian', 'Alakazam'};
-dms_rats = {'Giratina', 'Hoppip', 'Ivysaur', 'Kirlia', 'Lugia', 'Nidorina', 'Quaxly', 'Togepi', 'Whismur', 'Xatu', 'Yanma'};
-sham_rats = {'Emolga','Goldeen','Haxorus','Jigglypuff','Jirachi','Phione','Umbreon','Vulpix','test05022023'};
+blocked_rats = {'Azelf', 'Bidoof', 'Emolga', ...
+    'Giratina', 'Ivysaur', 'Jigglypuff', 'Lugia',...
+    'Ninetales', 'Onix', 'Quaxly', 'Sableye', 'Torchic',...
+    'Uxie', 'Vanillish', 'Whismur',...
+    'Yamper', 'Zorua'}; 
+
+unblocked_rats = {'test05022023', 'Blissey', 'Chikorita', 'Darkrai',...
+    'Eevee', 'Goldeen', 'Hoppip', 'Inkay',...
+    'Jirachi', 'Kirlia', 'Mesprit', 'Nidorina',...
+    'Oddish', 'Phione', 'Quilava', 'Raltz'...
+    'Shinx', 'Umbreon', ...
+    'Wartortle',  ...
+    'Cresselia', 'Haxorus'};
+
+str_rats = {'HSB_F_006','HSB_F_007','HSB_F_008',...
+    'HSB_F_009', 'HSB_F_010','HSB_F_011',...
+    'HSB_F_012', 'HSB_F_013', 'HSB_F_014'};
+
+% dls_ub_rats = {'Torchic', 'Uxie', 'Vanillish', 'Yamper', 'Zorua'};
+% dls_uu_rats = {'Blissey', 'Darkrai', 'Inkay', 'Mesprit', 'Quilava', 'Raltz', 'Zacian', 'Alakazam'};
+dls_rats = {'Uxie', 'Vanillish',...
+    'Zorua', 'Blissey', 'Darkrai',...
+    'Inkay', 'Mesprit', 'Quilava', 'Raltz'};
+% currently no Zacian, Yamper, Torchic
+
+dms_rats = {'Giratina', 'Hoppip', 'Ivysaur',...
+    'Kirlia', 'Lugia', 'Nidorina', 'Quaxly',...
+    'Togepi', 'Whismur'};
+% currently no Yanma
+
+sham_rats = {'Emolga','Goldeen','Haxorus',...
+    'Jigglypuff','Jirachi','Phione',...
+    'Umbreon','test05022023'};
+% currently no Vulpix
+
+test_rat = {'Onix'};
+
 % specify subject indices - if 4ABunstr in task list then select those animals
 % subjIndices = find(contains({rMABpre.task}, rFitParams.task));
 % subjIndices = find(contains({rMABstr.task}, rFitParams.task));
 subjIndices = find(contains({rMABpre.ratName}, blocked_rats));
-% subjIndices = find(contains({rMABlesions.ratName}, dls_rats));
+% subjIndices = find(contains({rMABlesions.ratName}, sham_rats));
 
 rFitParams.subjIndices = subjIndices;
 
 
 %% Algo and fit details
-% modelList = ["Qdsl", "Qdgsl"];
-modelList = ["4dsl", "4dgsl", "4dgs"];
-% modelList = ["Q","Qs","Qsl","Qd","Qds","Qdsl","Qg","Qgs","Qgsl","Qdg","Qdgs","Qdgsl",...
-%              "B","Bs","Bsl","Bd","Bds","Bdsl","Bu","Bus","Busl","Bdu","Bdus","Bdusl"];
-% modelList =               ["G","Gs","Gsl","Gd","Gds","Gdsl","Gu","Gus","Gusl","Gdu","Gdus","Gdusl"];
+% modelList = ["Qdgmsl", "Qdgmusl", "Qgmsl", "Qdgsl", "Qdgms"];
+% modelList = ["Q","Qgmhl", "Qdmhl","Qdghl","Qdgmh", "Qdgm", "Qdgmhl", "Qdgmuhl",...
+%      "Qdgmsl", "Qdgmusl", "Qgmsl", "Qdgsl", "Qdgms"...
+%      "B","Bmuhl", "Bduhl", "Bdmhl","Bdmuh", "Bdmu", "Bdmuhl"];
+    %  "I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
+% modelList = ["I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
+modelList = ["Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl"];
 fitData = 'B';
 
 for fitModel = modelList
@@ -108,7 +140,7 @@ for fitModel = modelList
     %% format sbatch command
     cmd = sprintf('cd %s/Jobs/', savepath(1:end - 1));
     disp(cmd);
-    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-10 %s %s/%s', ...
-        char(fitData),char(fitModel),char(slurm_file),'20260815_allblock_unstr_rats',savefolder(1:end-1));
+    cmd = sprintf('sbatch -J %s_%s -t 10-00:00 --array=1-17 %s %s/%s', ...
+        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_unstr_rats',savefolder(1:end-1));
     disp(cmd);
 end

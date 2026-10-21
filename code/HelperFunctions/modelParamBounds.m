@@ -7,11 +7,13 @@ function [algo, param_bnds, param_names, free_params] = modelParamBounds(modelNa
 rnd_b = [1e-2;2e1]; % rnd_w
 s_b = [0;8];  % sty_w
 sl_b = [1e-2;3]; % sty_l
+slr_b = [0;1]; % sty_lr change
+slr_c = [1;1]; % sty_lr constnat
 g_b = [1e-2;3]; % lambda
 u_b = [0;2]; % ucb_w
 % prob_comb = [perms([80 46 15 10]); perms([46 80 46 15])];
 m0_c = [0.4225;0.4225]; % m0 or q0 constant % change 
-m0_b = [0.05;0.95]; % m0 or q0 bounds
+m0_b = [0.01;0.95]; % m0 or q0 bounds
 
 % Q-learning specific
 qlr_b = [1e-2;1]; % lr_max
@@ -23,7 +25,7 @@ blr_b = [1;1]; % lr for BetaBayes
 % b0_b = [1;1]; % b0
 
 % GP specific
-t_b = [5;200]; % time_l
+t_b = [1e-2;1]; % time_l expressed as decay rate 
 mem_b = [5000;5000]; % max memory for GP space
 
 % SI specific
@@ -35,8 +37,8 @@ d_b = [0;1]; % decay
 
 if contains(modelName,"Q")    
 
-        % index         1       2       3      4    5     6      7       8
-        param_names = ["lr","lambda","decay","q0","ucb","beta","sty","sty-lambda"];
+        % index         1       2       3      4    5     6      7       8          9
+        param_names = ["lr","lambda","decay","q0","ucb","beta","sty","sty-lr","sty-lambda"];
         algo = 'Qlearning';
 
         param_bnds = zeros(2,length(param_names));
@@ -60,9 +62,14 @@ if contains(modelName,"Q")
         end
         if contains(modelName,"s")
             param_bnds(:,7) = s_b;
+            param_bnds(:,8) = slr_c;
+        end
+        if contains(modelName, "h")
+            param_bnds(:,7) = s_b;
+            param_bnds(:,8) = slr_b;
         end
         if contains(modelName,"l")
-            param_bnds(:,8) = sl_b;
+            param_bnds(:,9) = sl_b;
         end 
         
 elseif contains(modelName,"4")    
@@ -100,8 +107,8 @@ elseif contains(modelName,"4")
 
 elseif contains(modelName,"B")
 
-        % index         1       2       3     4      5      6     7        8
-        param_names = ["lr","lambda","decay","mu0","ucb","beta","sty","sty-lambda"];        
+        % index         1       2       3     4      5      6     7        8     9
+        param_names = ["lr","lambda","decay","mu0","ucb","beta","sty", "sty_lr","sty-lambda"];        
         algo = 'BayesUCB';
 
         param_bnds = zeros(2,length(param_names));
@@ -125,15 +132,20 @@ elseif contains(modelName,"B")
         end
         if contains(modelName,"s")
             param_bnds(:,7) = s_b;
+            param_bnds(:,8) = slr_c;
+        end
+        if contains(modelName, "h")
+            param_bnds(:,7) = s_b;
+            param_bnds(:,8) = slr_b;
         end
         if contains(modelName,"l")
-            param_bnds(:,8) = sl_b;
+            param_bnds(:,9) = sl_b;
         end        
 
 elseif contains(modelName,"G")
     
-        % index           1         2      3     4     5      6       7
-        param_names = ["lambda","trials","mu0","ucb","beta","sty","sty-lambda"];
+        % index           1         2      3     4     5      6       7     8
+        param_names = ["lambda","trials","mu0","ucb","beta","sty","sty_lr","sty-lambda"];
         algo = 'GPspace';
 
         param_bnds = zeros(2,length(param_names));
@@ -157,14 +169,19 @@ elseif contains(modelName,"G")
         end
         if contains(modelName,"s")
             param_bnds(:,6) = s_b;
+            param_bnds(:,7) = slr_c;
+        end
+        if contains(modelName, "h")
+            param_bnds(:,6) = s_b;
+            param_bnds(:,7) = slr_b;
         end
         if contains(modelName,"l")
-            param_bnds(:,7) = sl_b;
+            param_bnds(:,8) = sl_b;
         end
 
 elseif contains(modelName,"I")
-        % index          1      2          3         4 5 6
-        param_names = ["gamma","c","lambda","beta", "sty", "sty-lambda"];
+        % index          1      2          3     4   5      6         7 
+        param_names = ["gamma","c","lambda","beta", "sty","sty_lr", "sty-lambda"];
         algo = 'StateInference';
         param_bnds = zeros(2,length(param_names));
         param_bnds(:, 1) = gam;
@@ -176,9 +193,14 @@ elseif contains(modelName,"I")
         end  
         if contains(modelName,"s")
             param_bnds(:,5) = s_b;
+            param_bnds(:,6) = slr_c;
+        end
+        if contains(modelName, "h")
+            param_bnds(:,5) = s_b;
+            param_bnds(:,6) = slr_b;
         end
         if contains(modelName,"l")
-            param_bnds(:,6) = sl_b;
+            param_bnds(:,7) = sl_b;
         end
 end
 

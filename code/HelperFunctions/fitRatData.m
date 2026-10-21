@@ -15,7 +15,7 @@ end
 subj = rFitParams.subjIndices(id);
 rng(1, 'twister');
 % n_subjects = numel(rFitParams.subjIndices);
-weeks = 4:8;
+% weeks = 4:8;
 
 % to fit first 100 trials of first block
 % atleast_trials = 100;
@@ -34,7 +34,15 @@ weeks = 4:8;
 % to fit first n trials of any session, regardless of blocking
 atleast_trials = 300; 
 trials = 1:300;
-sess_idx = find(ismember(rMABpre(subj).weekOfTraining, weeks) & rMABpre(subj).trialNums>=atleast_trials);
+% sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
+sess_idx = find(rMABpre(subj).dayOfTraining>30 & rMABpre(subj).trialNums>=atleast_trials);
+
+% exclude sessions with a NaN reward or choice within the fitted trials
+nan_sess = any(isnan(rMABpre(subj).rewards(sess_idx, trials)) | isnan(rMABpre(subj).choices(sess_idx, trials)), 2);
+if any(nan_sess)
+    disp(['Excluding ' num2str(sum(nan_sess)) ' of ' num2str(numel(sess_idx)) ' sessions with NaN in first ' num2str(atleast_trials) ' trials']);
+end
+sess_idx = sess_idx(~nan_sess);
 
 % get every 5th of a random sampling
 % N = length(sess_idx);
@@ -106,6 +114,8 @@ rFitResult.subjIndex = subj;
 rFitResult.nll = nll;
 rFitResult.pR2 = pR2;
 rFitResult.params = params;
+% doesnt work if kfold skips sessions:
+rFitResult.nTrials = sum(~isnan(rMABpre(subj).choices(rounds{1}, trials)), 'all'); % exact number of trials fit
 rFitResult.ratName = rMABpre(subj).ratName;
 % rFitResult.sess = rMABall(subj).session; % field does not exist
 switch rFitParams.crossval  

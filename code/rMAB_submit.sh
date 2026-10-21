@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J rMABfit #job_name
 #SBATCH -N 1                 # number of nodes per job 
-#SBATCh --nodelist=server[2-3]   # which nodes to pick?
-#SBATCH -c 8            # number of cores
-#SBATCH --mem 16000          # memory for all cores
+##SBATCH --nodelist=server2,server3   # which nodes to pick?
+#SBATCH -c 2            # number of cores
+#SBATCH --mem 2000          # memory for all cores
 #SBATCH -t 0-12:00           # time (D-HH:MM)
 #SBATCH --export=ALL
 #SBATCH -o %x_%a_%A.%N.%j.out     # STDOUT

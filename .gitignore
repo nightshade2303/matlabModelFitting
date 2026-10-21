@@ -2,3 +2,4 @@ output/r_fits/2026*
 output/sim/*
 output/r_recovery/*
 *.out
+output/r_fits/comp*

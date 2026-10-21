@@ -15,14 +15,14 @@ end
 
 % load dataset
 % load([dataPath,'rMABstr_20260529.mat'], 'rMABpre');
-load([dataPath,'rMABdat_20260212.mat'], 'rMABpre');
+load([dataPath,'rMABpre_20261003.mat'], 'rMABpre');
 % load([dataPath,'rMABdat_20260212.mat'], 'rMABlesions');
 
 % fit session
 % rFitResult = fitRatData(rMABstr, rFitParams, subj_id);
 % rFitResult = fitRatData(rMABlesions, rFitParams, subj_id);
 rFitResult = fitRatData(rMABpre, rFitParams, subj_id);
-
+% 
 % save result
 save([fitPath,'rFit_' num2str(subj_id)], 'rFitResult');
 
