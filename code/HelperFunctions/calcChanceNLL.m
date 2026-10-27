@@ -11,7 +11,7 @@ n_trials = size(choices,2);
 if rnd_flag == 1
     null_probs = ones(1,num_choices)/num_choices; % equal chance of selecting choices (0.25 for 4 choices)
 else
-    null_probs = arrayfun(@(x) sum(choices(:)==x)/numel(choices), 1:num_choices); % prob of choosing ports is dictated by overall choice frequency
+    null_probs = arrayfun(@(x) sum(choices(:)==x)/sum(~isnan(choices(:))), 1:num_choices); % prob of choosing ports is dictated by overall choice frequency (ignoring NaN padding)
 end
 
 nll_rnd_mat = zeros(n_rounds, n_trials-1);

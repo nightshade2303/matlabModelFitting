@@ -76,7 +76,7 @@ switch algo
                 last_choice = zeros(1,num_choices);
                 last_choice(choices(rd,tr-1)) = 1;
                 h_a = h_a + lr_sty*(last_choice-h_a);
-                clip(h_a, 0, 1);
+                h_a = clip(h_a, 0, 1);
 
                 latent_vars(rd,tr,:,3) = h_a;
                 

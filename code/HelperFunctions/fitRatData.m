@@ -12,6 +12,30 @@ if ~isfield(rFitParams,'crossval')
     rFitParams.crossval = 'kfold'; % Set default value for crossval if not provided
 end
 
+if ~isfield(rFitParams,'fitType')
+    rFitParams.fitType = 'expert'; % 'expert' (days > 30) or 'daywise' (groups of days)
+end
+
+switch rFitParams.fitType
+    case 'expert'
+        def_atleast = 300; % min session length
+        def_max = 300;     % fit sessions up to this trial
+    case 'daywise'
+        def_atleast = 100;
+        def_max = 300;
+        if ~isfield(rFitParams,'dayGroups')
+            rFitParams.dayGroups = {1:7, 8:14, 15:21, 22:28}; % days of training fit together
+        end
+end
+
+if ~isfield(rFitParams,'atleast_trials')
+    rFitParams.atleast_trials = def_atleast;
+end
+
+if ~isfield(rFitParams,'max_trials')
+    rFitParams.max_trials = def_max;
+end
+
 subj = rFitParams.subjIndices(id);
 rng(1, 'twister');
 % n_subjects = numel(rFitParams.subjIndices);
@@ -31,35 +55,34 @@ rng(1, 'twister');
 %     rounds = {};
 % end
 
-% to fit first n trials of any session, regardless of blocking
-atleast_trials = 300; 
-trials = 1:300;
-% sess_idx = find(rMABpre(subj).trialNums>=atleast_trials);
-sess_idx = find(rMABpre(subj).dayOfTraining>30 & rMABpre(subj).trialNums>=atleast_trials);
-
-% exclude sessions with a NaN reward or choice within the fitted trials
-nan_sess = any(isnan(rMABpre(subj).rewards(sess_idx, trials)) | isnan(rMABpre(subj).choices(sess_idx, trials)), 2);
-if any(nan_sess)
-    disp(['Excluding ' num2str(sum(nan_sess)) ' of ' num2str(numel(sess_idx)) ' sessions with NaN in first ' num2str(atleast_trials) ' trials']);
+% expert: all days > 30 fit together; daywise: each group of training days fit together
+% sessions with atleast_trials, fit up to max_trials
+atleast_trials = rFitParams.atleast_trials;
+trials = 1:min(rFitParams.max_trials, size(rMABpre(subj).choices, 2));
+switch rFitParams.fitType
+    case 'expert'
+        day_groups = {unique(rMABpre(subj).dayOfTraining(rMABpre(subj).dayOfTraining > 30))'};
+    case 'daywise'
+        day_groups = rFitParams.dayGroups;
 end
-sess_idx = sess_idx(~nan_sess);
+n_groups = numel(day_groups);
 
-% get every 5th of a random sampling
-% N = length(sess_idx);
-% % Get indices for 1/5th (20%) of the data randomly
-% numSamples = round(N/5);
-% randomIndices = randperm(N, numSamples);
-% % Extract the samples
-% sampledData = sess_idx(randomIndices);
-% rounds = {sampledData};
-% select 30 random sessions from dataset
-% if length(sess_idx)>30
-%     sess_idx = randsample(sess_idx, 30);
-% else
-%     disp('Not enough sessions');
-%     sess_idx = [];
-% end
-rounds = {sess_idx};
+rounds = cell(1, n_groups);
+sess_per_day = cell(1, n_groups); % number of sessions fit on each day of the group
+for g = 1 : n_groups
+    sess_idx = find(ismember(rMABpre(subj).dayOfTraining, day_groups{g}) & rMABpre(subj).trialNums>=atleast_trials);
+
+    % exclude sessions with a NaN reward or choice within their own trials (shorter sessions are NaN-padded)
+    in_sess = trials <= min(rMABpre(subj).trialNums(sess_idx), trials(end));
+    nan_sess = any(in_sess & (isnan(rMABpre(subj).rewards(sess_idx, trials)) | isnan(rMABpre(subj).choices(sess_idx, trials))), 2);
+    if any(nan_sess)
+        disp(['Group ' num2str(g) ': excluding ' num2str(sum(nan_sess)) ' of ' num2str(numel(sess_idx)) ' sessions with NaN in first ' num2str(trials(end)) ' trials']);
+    end
+    sess_idx = sess_idx(~nan_sess);
+
+    rounds{g} = sess_idx;
+    sess_per_day{g} = sum(rMABpre(subj).dayOfTraining(sess_idx) == day_groups{g}(:)', 1);
+end
 
 % to fit all blocks, all trials
 % trials = 1:size(rMABpre(subj).choices, 2);
@@ -80,7 +103,10 @@ switch rFitParams.task
                 bic = NaN(1, length(rounds));
 
                 for rd = 1 : length(rounds)
-                    
+                    if isempty(rounds{rd})
+                        continue; % no sessions in this group, leave as NaN
+                    end
+
                     [nll(1,rd), pR2(1,rd), params(1,rd,:), bic(1,rd), aic(1,rd)] = ...
                         fitModel(rFitParams, ...
                         rMABpre(subj).choices(rounds{rd}, trials), ...
@@ -91,10 +117,10 @@ switch rFitParams.task
             otherwise
                 for rd = 1 : length(rounds)
                     % check number of sessions, should be more than number of folds
-                    if size(rounds{1}, 2) < rFitParams.kfolds
+                    if numel(rounds{rd}) < rFitParams.kfolds
                     % if size(rounds, 2)< rFitParams.kfolds
                         disp("Number of sessions too low.");
-                        break;
+                        continue;
                     end
                     
                     [nll(1,rd), pR2(1,rd), params(1,rd,:)] = ...
@@ -116,6 +142,12 @@ rFitResult.pR2 = pR2;
 rFitResult.params = params;
 % doesnt work if kfold skips sessions:
 rFitResult.nTrials = sum(~isnan(rMABpre(subj).choices(rounds{1}, trials)), 'all'); % exact number of trials fit
+rFitResult.nTrialsGroup = cellfun(@(r) sum(~isnan(rMABpre(subj).choices(r, trials)), 'all'), rounds); % trials fit per group
+rFitResult.fitType = rFitParams.fitType;
+rFitResult.dayGroups = day_groups;
+rFitResult.sessPerDay = sess_per_day; % sessions fit per day, aligned with dayGroups
+rFitResult.nSess = cellfun(@numel, rounds); % sessions fit per group
+rFitResult.sessIdx = rounds;
 rFitResult.ratName = rMABpre(subj).ratName;
 % rFitResult.sess = rMABall(subj).session; % field does not exist
 switch rFitParams.crossval  

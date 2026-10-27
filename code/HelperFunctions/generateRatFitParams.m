@@ -3,14 +3,14 @@
 %% Load dataset
 
 % unstructured dataset
-if exist("rMABpre","var") ~= 1
-    load("../../data/rMABpre_20261003.mat", "rMABpre");
-end
+% if exist("rMABpre","var") ~= 1
+%     load("../../data/rMABpre_20261003.mat", "rMABpre");
+% end
 
 % structured dataset
-% if exist("rMABpre","var") ~= 1
-%     load("../../data/rMABstr_20260529.mat", "rMABpre");
-% end
+if exist("rMABpre","var") ~= 1
+    load("../../data/rMABstr_20261003.mat", "rMABpre");
+end
 
 % lesioned dataset
 % if exist("rMABlesions","var") ~= 1
@@ -21,15 +21,15 @@ end
 
 rFitParams = struct;
 
-savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_unstr_rats/';
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_weekly_str_rats/';
 % savedir = '/n/home09/dhawale/Rishika/output/r_fits/20260912_allblock_unstr_rats/';
 slurm_file = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh';  % change this maybe?
 % slurm_file = '/n/home09/dhawale/Rishika/output/r_fits/rMAB_submit.sh';
 
 %% Task, sess and round structure
 
-fitName = 'ub_all';
-rFitParams.task = '4ABunstr';
+fitName = 'sb_all';
+rFitParams.task = '4ABstr';
 % rFitParams.rounds = {1:100};
 % trials and sessions are defined individually for each animal in fitRatData.m
 
@@ -41,12 +41,21 @@ rFitParams.task = '4ABunstr';
 % rFitParams.task = '4ABstr';
 
 % info about fitting
-rFitParams.crossval = 'none'; % no more kfolding
+rFitParams.crossval = 'none'; % kfold or none or looc
 rFitParams.optim = 'bads'; % 'bads' or 'fmin'
-rFitParams.kfolds = 4;
+rFitParams.kfolds = 1;
 rFitParams.iters = 5;
 rFitParams.linear_env = 1;
 rFitParams.rnd_flag = 0;
+
+% 'expert': sessions on days > 30 fit together (>= 300 trials, first 300)
+% 'daywise': sessions in each group of training days are fit together
+rFitParams.fitType = 'daywise';
+if strcmp(rFitParams.fitType, 'daywise')
+    rFitParams.dayGroups = {1:7, 8:14, 15:21, 22:28};
+    rFitParams.atleast_trials = 100; % min session length
+    rFitParams.max_trials = 300; % fit sessions up to this trial
+end
 
 %% Find subj/sess list
 blocked_rats = {'Azelf', 'Bidoof', 'Emolga', ...
@@ -58,7 +67,7 @@ blocked_rats = {'Azelf', 'Bidoof', 'Emolga', ...
 unblocked_rats = {'test05022023', 'Blissey', 'Chikorita', 'Darkrai',...
     'Eevee', 'Goldeen', 'Hoppip', 'Inkay',...
     'Jirachi', 'Kirlia', 'Mesprit', 'Nidorina',...
-    'Oddish', 'Phione', 'Quilava', 'Raltz'...
+    'Oddish', 'Quilava', 'Raltz'...
     'Shinx', 'Umbreon', ...
     'Wartortle',  ...
     'Cresselia', 'Haxorus'};
@@ -89,7 +98,7 @@ test_rat = {'Onix'};
 % specify subject indices - if 4ABunstr in task list then select those animals
 % subjIndices = find(contains({rMABpre.task}, rFitParams.task));
 % subjIndices = find(contains({rMABstr.task}, rFitParams.task));
-subjIndices = find(contains({rMABpre.ratName}, blocked_rats));
+subjIndices = find(contains({rMABpre.ratName}, str_rats));
 % subjIndices = find(contains({rMABlesions.ratName}, sham_rats));
 
 rFitParams.subjIndices = subjIndices;
@@ -98,11 +107,13 @@ rFitParams.subjIndices = subjIndices;
 %% Algo and fit details
 % modelList = ["Qdgmsl", "Qdgmusl", "Qgmsl", "Qdgsl", "Qdgms"];
 % modelList = ["Q","Qgmhl", "Qdmhl","Qdghl","Qdgmh", "Qdgm", "Qdgmhl", "Qdgmuhl",...
-%      "Qdgmsl", "Qdgmusl", "Qgmsl", "Qdgsl", "Qdgms"...
-%      "B","Bmuhl", "Bduhl", "Bdmhl","Bdmuh", "Bdmu", "Bdmuhl"];
-    %  "I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
+%      "Qdgmsl", "Qdgmusl", "Qgmsl", "Qdgsl", "Qdgms",...
+%      "B","Bmuhl", "Bduhl", "Bdmhl","Bdmuh", "Bdmu", "Bdmuhl",...
+%      "Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl",...
+%      "I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
 % modelList = ["I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
-modelList = ["Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl"];
+% modelList = ["Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl"];
+modelList = ["Qdgmhl"];
 fitData = 'B';
 
 for fitModel = modelList
@@ -140,7 +151,7 @@ for fitModel = modelList
     %% format sbatch command
     cmd = sprintf('cd %s/Jobs/', savepath(1:end - 1));
     disp(cmd);
-    cmd = sprintf('sbatch -J %s_%s -t 10-00:00 --array=1-17 %s %s/%s', ...
-        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_unstr_rats',savefolder(1:end-1));
+    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-9 %s %s/%s', ...
+        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_weekly_str_rats',savefolder(1:end-1));
     disp(cmd);
 end

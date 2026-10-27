@@ -14,8 +14,8 @@ switch rFitParams.optim
 end
 
 % load dataset
-% load([dataPath,'rMABstr_20260529.mat'], 'rMABpre');
-load([dataPath,'rMABpre_20261003.mat'], 'rMABpre');
+load([dataPath,'rMABstr_20261003.mat'], 'rMABpre');
+% load([dataPath,'rMABpre_20261003.mat'], 'rMABpre');
 % load([dataPath,'rMABdat_20260212.mat'], 'rMABlesions');
 
 % fit session

@@ -88,7 +88,8 @@ switch fitParamSet.crossval
         
         n_free_params = sum(param_bnds(2,:)~=param_bnds(1,:)); % number of free params for the fit
         fit_aic = 2*fit_nll + 2*n_free_params;
-        fit_bic = 2*fit_nll + log(numel(choices))*n_free_params;
+        n_obs = sum(~isnan(choices(:,1:end)), "all"); % trials predicted (excl. first trial and NaN padding)
+        fit_bic = 2*fit_nll + log(n_obs)*n_free_params;
 
     otherwise
         % cross validation
@@ -133,6 +134,7 @@ switch fitParamSet.crossval
             nll_for_abic = calcNLL(fit_params, algo, choices, rewards, num_choices, linear_env); 
             n_free_params = sum(param_bnds(2,:)~=param_bnds(1,:)); % number of free params for the fit
             fit_aic = 2*nll_for_abic + 2*n_free_params;
-            fit_bic = 2*nll_for_abic + log(numel(choices))*n_free_params;
+            n_obs = sum(~isnan(choices(:,1:end)), "all"); % trials predicted (excl. first trial and NaN padding)
+            fit_bic = 2*nll_for_abic + log(n_obs)*n_free_params;
         end
 end
