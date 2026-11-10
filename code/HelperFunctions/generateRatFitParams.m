@@ -21,7 +21,7 @@ end
 
 rFitParams = struct;
 
-savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_weekly_str_rats/';
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/';
 % savedir = '/n/home09/dhawale/Rishika/output/r_fits/20260912_allblock_unstr_rats/';
 slurm_file = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh';  % change this maybe?
 % slurm_file = '/n/home09/dhawale/Rishika/output/r_fits/rMAB_submit.sh';
@@ -41,18 +41,18 @@ rFitParams.task = '4ABstr';
 % rFitParams.task = '4ABstr';
 
 % info about fitting
-rFitParams.crossval = 'none'; % kfold or none or looc
+rFitParams.crossval = 'kfold'; % kfold or none or looc
 rFitParams.optim = 'bads'; % 'bads' or 'fmin'
-rFitParams.kfolds = 1;
-rFitParams.iters = 5;
+rFitParams.kfolds = 5;
+rFitParams.iters = 1;
 rFitParams.linear_env = 1;
 rFitParams.rnd_flag = 0;
 
 % 'expert': sessions on days > 30 fit together (>= 300 trials, first 300)
 % 'daywise': sessions in each group of training days are fit together
-rFitParams.fitType = 'daywise';
+rFitParams.fitType = 'expert';
 if strcmp(rFitParams.fitType, 'daywise')
-    rFitParams.dayGroups = {1:7, 8:14, 15:21, 22:28};
+    rFitParams.dayGroups = {1:7, 8:14, 15:21, 22:28, 29:35, 36:42, 43:49, 50:56};
     rFitParams.atleast_trials = 100; % min session length
     rFitParams.max_trials = 300; % fit sessions up to this trial
 end
@@ -113,7 +113,8 @@ rFitParams.subjIndices = subjIndices;
 %      "I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
 % modelList = ["I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
 % modelList = ["Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl"];
-modelList = ["Qdgmhl"];
+% modelList = ["Qdghl"];
+modelList = ["Qd", "Qg", "Qghl", "Qdhl"];
 fitData = 'B';
 
 for fitModel = modelList
@@ -152,6 +153,6 @@ for fitModel = modelList
     cmd = sprintf('cd %s/Jobs/', savepath(1:end - 1));
     disp(cmd);
     cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-9 %s %s/%s', ...
-        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_weekly_str_rats',savefolder(1:end-1));
+        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_str_cv_rats',savefolder(1:end-1));
     disp(cmd);
 end

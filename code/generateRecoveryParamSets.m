@@ -32,15 +32,17 @@ end
 
 n_reps = 100;
 rounds = [10];
+n_blocks_per_sess = 2;
+n_trials_per_block = 150;
 
 % Sim param set
 mySimParamSet = struct;
 mySimParamSet.rnd_seed = 1;
 mySimParamSet.linear_env = 1;
 mySimParamSet.n_rounds = 10;
-mySimParamSet.n_trials = 100;
-% mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, false); task = 'str'; % structured
-mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, 4, true); task = 'unstr'; % unstructured
+mySimParamSet.n_trials = n_blocks_per_sess*n_trials_per_block;
+% mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, n_trials_per_block, 4, false, n_blocks_per_sess); task = 'str'; % structured
+mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, n_trials_per_block, 4, true, n_blocks_per_sess); task = 'unstr';
 
 % Fit params set
 myFitParamSet = struct;
@@ -51,15 +53,16 @@ myFitParamSet.iters = 5;
 myFitParamSet.linear_env = 1;
 myFitParamSet.rnd_flag = 0;
 
-modelList = ["Q","Qs","Qgs","Qsl", "Qgsl", "Qdgsl", "B", "Bs","Bsl", "Bus","Busl", "Bdusl", "G", "Gs", "Gsl", "Gus", "Gusl", "Gdus", "Gdusl"];
+% modelList = ["Q","Qs","Qgs","Qsl", "Qgsl", "Qdgsl", "B", "Bs","Bsl", "Bus","Busl", "Bdusl", "G", "Gs", "Gsl", "Gus", "Gusl", "Gdus", "Gdusl"];
+modelList = ["Qdghl"]
 for simModel = modelList    
     
     simParamSet = mySimParamSet; % Copy simulation parameters
     simParamSet.model = simModel;    
     [simParamSet.algo, simParamSet.param_bnds] = modelParamBounds(char(simModel));
 
-    for recModel = modelList % sim all, fit all (model + param recovery)
-    % for recModel = simModel % sim all, fit same (only param recovery)
+    % for recModel = modelList % sim all, fit all (model + param recovery)
+    for recModel = simModel % sim all, fit same (only param recovery)
         fitParamSet = myFitParamSet; % Copy fit parameters
         fitParamSet.model = recModel;
         [fitParamSet.algo, fit_param_bnds] = modelParamBounds(char(recModel));

@@ -29,10 +29,12 @@ switch algo
         % unpack params
         gen_l = params(1); % length scale of GP
         time_l = floor(params(2)); % length of memory window (is an integer)
-        ucb_w = params(3); % weight of ucb param
-        rnd_w = params(4); % weight of random exploration (inverse softmax temp)
-        sty_w = params(5); % weight of sticky param
-        sty_l = params(6); % length scale of sticky process 
+        mu0 = params(3); % mean function
+        ucb_w = params(4); % weight of ucb param
+        rnd_w = params(5); % weight of random exploration (inverse softmax temp)
+        sty_w = params(6); % weight of sticky param
+        lr_sty = params(7);
+        sty_l = params(8); % length scale of sticky process 
 
         % GP settings
         meanfunc = @meanConst;        
@@ -41,7 +43,7 @@ switch algo
 
         % gp constants
         sig_sd = 1;
-        mean_const = 0;
+        mean_const = log(mu0/(1-mu0));
         
         choice_vec = 1:num_choices;
         if linear_env == 0
@@ -56,7 +58,7 @@ switch algo
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
-        latent_vars = zeros(n_rounds, n_trials, num_choices, 2); % mu and sd of gaussian process
+        latent_vars = zeros(n_rounds, n_trials, num_choices, 3); % mu and sd of gaussian process
         % block = 1;      
         
         for rd = 1 : n_rounds
@@ -81,12 +83,19 @@ switch algo
 
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd;
                 
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+                
                 % sticky
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = zeros(num_choices,1);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
                 
                 % softmax
@@ -110,11 +119,13 @@ switch algo
 
         % unpack params
         gen_l = params(1); % length scale of GP
-        time_l = params(2); % time scale of GP
-        ucb_w = params(3); % weight of ucb2 param
-        rnd_w = params(4); % weight of random exploration (inverse softmax temp)
-        sty_w = params(5); % weight of sticky param
-        sty_l = params(6); % length scale of sticky process    
+        time_l = floor(params(2)); % length of memory window (is an integer)
+        mu0 = params(3); % mean function
+        ucb_w = params(4); % weight of ucb param
+        rnd_w = params(5); % weight of random exploration (inverse softmax temp)
+        sty_w = params(6); % weight of sticky param
+        lr_sty = params(7);
+        sty_l = params(8); % length scale of sticky process   
 
         % GP settings
         meanfunc = @meanConst;
@@ -123,7 +134,7 @@ switch algo
         
         % gp constants
         sig_sd = 1;
-        mean_const = 0;
+        mean_const = log(mu0/(1-mu0));
 
         choice_vec = 1:num_choices;
         if linear_env == 0
@@ -142,9 +153,10 @@ switch algo
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
-        latent_vars = zeros(n_rounds, n_trials, num_choices, 2); % mu and sd of gaussian process
+        latent_vars = zeros(n_rounds, n_trials, num_choices, 3); % mu and sd of gaussian process
                 
         for rd = 1 : n_rounds
+            h_a = zeros(1, num_choices);
             % make a random choice on the first trial
             choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); 
             rewards(rd, 1) = 2*(rand_nums(rd,1,2) < rew_probs(rd, 1, choices(rd,1)))-1; % determine reward based on probability
@@ -168,12 +180,19 @@ switch algo
 
                 latent_vars(rd,tr,:,1) = mu; latent_vars(rd,tr,:,2) = sd; 
                 
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+                
                 % sticky
-                if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2))' * sty_w;
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = zeros(num_choices,1);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
                 
                 % softmax
@@ -207,8 +226,102 @@ switch algo
         ucb_w = params(5);  % weight of ucb1 param
         rnd_w = params(6);  % weight of random exploration (inverse softmax temp)
         sty_w = params(7);  % weight of sticky param
-        sty_l = params(8);  % length scale of sticky process    
+        lr_sty = params(8); % sticky learning rate
+        sty_l = params(9);  % length scale of sticky process    
 
+        latent_vars = zeros(n_rounds, n_trials, num_choices, 3); % q values and ucb-1 term
+        % block = 1;
+        
+        for rd = 1 : n_rounds
+            q_a = zeros(1,num_choices)+q0; % initialise q-values to q0
+            n_a = zeros(1,num_choices)+1; % choice sample counter
+            h_a = zeros(1, num_choices);
+            latent_vars(rd,1,:,1) = q_a; latent_vars(rd,1,:,2) = 0;latent_vars(rd,1,:,3) = h_a;
+
+            % make a random choice on the first trial
+            choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); 
+            rewards(rd, 1) = rand_nums(rd,1,2) < rew_probs(rd,1,choices(rd,1)); % determine reward based on probability
+
+            for tr = 2 : n_trials
+                prev_choice = zeros(1,num_choices);
+                prev_choice(choices(rd,tr-1)) = 1;
+
+                rpe = (rewards(rd,tr-1) - q_a(choices(rd,tr-1)));
+
+                % q values decay towards 0 (except previously chosen action)
+                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0); 
+
+                % % q_a = q_a - q_decay*(q_a-0);       % all q-values decay                              
+                                
+                % Q learning    
+                if gen_l > 0
+                    lr_q = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*gen_l^2)) * lr_max;                    
+                    q_a = q_a + lr_q * rpe;
+                else
+                    q_a(choices(rd,tr-1)) = q_a(choices(rd,tr-1)) + lr_max * rpe;
+                end        
+                
+                q_a = clip(q_a, 0, 1);     
+
+                n_a(choices(rd,tr-1)) = n_a(choices(rd,tr-1))+1;
+                u_a = sqrt(2*log(tr-1) ./ n_a);
+
+                latent_vars(rd,tr,:,1) = q_a; latent_vars(rd,tr,:,2) = u_a;        
+                
+                %  update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty *(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+                
+                % sticky
+                if sty_l > 0                    
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
+                else
+                    sticky_vec = sty_w * h_a;
+                end
+
+                choice_pref = (q_a + ucb_w*u_a)*rnd_w + sticky_vec;
+                choice_pref = choice_pref - max(choice_pref);  % to avoid overflow errors in softmax
+                choice_probs = exp(choice_pref) / sum(exp(choice_pref));  % softmax
+                choice_probs(choice_probs==0) = eps;
+
+                choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
+                rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)); % determine reward based on probability 
+                
+
+                % if (rem(tr, n_trials_per_block) == 0)
+                %     block = block + 1;
+                % end
+            end
+        end
+
+    case 'Qlearningbiasq0'
+        %% Q-learning with optional generalisation, UCB-1, stickyness, Q-decay
+
+        choice_vec = 1:num_choices;
+        if linear_env == 0
+            dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
+        else
+            dist_mat = abs(choice_vec(:)-choice_vec);
+        end
+
+        % unpack params
+        lr_max = params(1); % learning rate
+        gen_l = params(2);  % length_scale parameter
+        q_decay = params(3);% decay of q values towards 0
+        q1 = params(4);     % initial Q-value
+        q2 = params(5);     % initial Q-valu
+        q3 = params(6);     % initial Q-valu
+        q4 = params(7);     % initial Q-valu
+        ucb_w = params(8);  % weight of ucb1 param
+        rnd_w = params(9);  % weight of random exploration (inverse softmax temp)
+        sty_w = params(10);  % weight of sticky param
+        sty_l = params(11);  % length scale of sticky process    
+        
+        q0 = [q1, q2, q3, q4];
         latent_vars = zeros(n_rounds, n_trials, num_choices, 2); % q values and ucb-1 term
         % block = 1;
         for rd = 1 : n_rounds
@@ -227,7 +340,7 @@ switch algo
                 rpe = (rewards(rd,tr-1) - q_a(choices(rd,tr-1)));
 
                 % q values decay towards 0 (except previously chosen action)
-                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0); 
+                q_a(prev_choice==0) = q_a(prev_choice==0) - q_decay*(q_a(prev_choice==0)-q0(prev_choice==0)); 
 
                 % % q_a = q_a - q_decay*(q_a-0);       % all q-values decay                              
                                 
