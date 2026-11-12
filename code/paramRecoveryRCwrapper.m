@@ -13,6 +13,21 @@ switch fitParamSet.optim
         addpath('./fminsearchbnd/');
 end
 
+% start a local parallel pool sized to the Slurm allocation (after addpath so workers inherit the path)
+n_workers = str2double(getenv('SLURM_CPUS_PER_TASK'));
+if isnan(n_workers) || n_workers < 1
+    n_workers = feature('numcores');
+end
+if isempty(gcp('nocreate')) && n_workers > 1
+    pc = parcluster('Processes');
+    % per-job storage dir so concurrent array tasks don't clash in ~/.matlab
+    job_storage = fullfile(tempdir, ['matlab_pool_' getenv('SLURM_JOB_ID') '_' getenv('SLURM_ARRAY_TASK_ID')]);
+    if ~exist(job_storage, 'dir'); mkdir(job_storage); end
+    pc.JobStorageLocation = job_storage;
+    pc.NumWorkers = n_workers;
+    parpool(pc, n_workers);
+end
+
 tic;
 switch fitParamSet.crossval
     case 'none'

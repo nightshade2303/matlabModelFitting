@@ -24,7 +24,7 @@ if ~isfield(simParamSet,'rnd_seed')
     simParamSet.rnd_seed = 1; % Set default value for rnd_seed if not provided
 end
 
-n_arms = size(simParamSet.rprobset,2);
+n_arms = size(simParamSet.rprobset, ndims(simParamSet.rprobset)); % arms are the last dim (2D: sets x arms; 3D blocked: rounds x trials x arms)
 n_sim_params = size(simParamSet.param_bnds,2);
 log_params = simParamSet.logspace == 1;
 
@@ -57,10 +57,10 @@ for rp = 1 : n_reps
     end
 
     % simulate choices and rewards
-    [choices(:,:,rp), rewards(:,:,rp)] = simAlgos(simParamSet.algo, simParams(rp,:), simParamSet.n_rounds, simParamSet.n_trials, simParamSet.rprobset, simParamSet.linear_env);
+    [choices(:,:,rp), rewards(:,:,rp)] = simAlgosBlocked(simParamSet.algo, simParams(rp,:), simParamSet.n_rounds, simParamSet.n_trials_per_block, simParamSet.rprobset, simParamSet.linear_env, simParamSet.n_blocks_per_round);
     
 end
-
+disp ("Simulated data");
 %% Fitting loop
 
 n_rec_params = size(fitParamSet.param_bnds,2);
@@ -70,8 +70,18 @@ rec_pR2 = zeros(n_reps,1);
 rec_aic = zeros(n_reps,1);
 rec_bic = zeros(n_reps,1);
 
-% fitting loop over reps
-for rp = 1 : n_reps
-    disp(['Rep ' num2str(rp)]);
-    [rec_nll(rp), rec_pR2(rp), recParams(rp,:), rec_bic(rp), rec_aic(rp)] = fitModel(fitParamSet, choices(:,:,rp), rewards(:,:,rp), n_arms);
+% fitting loop over reps (parallel across reps; runs serially if no pool / no Parallel Computing Toolbox)
+fit_seed = simParamSet.rnd_seed;
+parfor rp = 1 : n_reps
+    % per-rep seed so random BADS starts are reproducible regardless of worker scheduling
+    rng(fit_seed + rp, 'twister');
+    disp(['Fitting rep ' num2str(rp)]);
+    [nll_rp, pR2_rp, params_rp, bic_rp, aic_rp] = fitModel(fitParamSet, choices(:,:,rp), rewards(:,:,rp), n_arms);
+    rec_nll(rp) = nll_rp;
+    rec_pR2(rp) = pR2_rp;
+    recParams(rp,:) = params_rp;
+    if ~isempty(bic_rp) % fitModel returns [] for aic/bic when not computed
+        rec_bic(rp) = bic_rp;
+        rec_aic(rp) = aic_rp;
+    end
 end

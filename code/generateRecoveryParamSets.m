@@ -40,7 +40,10 @@ mySimParamSet = struct;
 mySimParamSet.rnd_seed = 1;
 mySimParamSet.linear_env = 1;
 mySimParamSet.n_rounds = 10;
+% need all of the following for paramrec
 mySimParamSet.n_trials = n_blocks_per_sess*n_trials_per_block;
+mySimParamSet.n_trials_per_block = n_trials_per_block;
+mySimParamSet.n_blocks_per_round = n_blocks_per_sess;
 % mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, n_trials_per_block, 4, false, n_blocks_per_sess); task = 'str'; % structured
 mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, n_trials_per_block, 4, true, n_blocks_per_sess); task = 'unstr';
 
@@ -48,13 +51,13 @@ mySimParamSet.rprobset = generateRProbSet(mySimParamSet.n_rounds, n_trials_per_b
 myFitParamSet = struct;
 myFitParamSet.crossval = 'none';
 myFitParamSet.optim = 'bads';
-myFitParamSet.kfolds = 4;
+myFitParamSet.kfolds = 1;
 myFitParamSet.iters = 5;
 myFitParamSet.linear_env = 1;
 myFitParamSet.rnd_flag = 0;
 
 % modelList = ["Q","Qs","Qgs","Qsl", "Qgsl", "Qdgsl", "B", "Bs","Bsl", "Bus","Busl", "Bdusl", "G", "Gs", "Gsl", "Gus", "Gusl", "Gdus", "Gdusl"];
-modelList = ["Qdghl"]
+modelList = ["Qdghl"];
 for simModel = modelList    
     
     simParamSet = mySimParamSet; % Copy simulation parameters

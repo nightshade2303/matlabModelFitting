@@ -1,46 +1,145 @@
-function [fitnessLandscape] = computeFitnessLandscape(simParamSet,reps)
+function fL = computeFitnessLandscape(simParamSet, reps)
+%COMPUTEFITNESSLANDSCAPE  Simulate a model at many parameter sets in one fixed
+%   environment, keeping every choice and reward.
+%
+%   fL = computeFitnessLandscape(simParamSet, reps)
+%
+% Inputs
+%   simParamSet  struct with fields
+%     algo                algorithm name passed to simAlgosBlocked ('Qlearning', ...)
+%     param_bnds          2 x n_params [lb; ub] (from modelParamBounds). Params
+%                         with lb == ub are fixed at that value.
+%     rprobset            n_rounds x n_trials x n_arms reward probabilities
+%                         (from generateRProbSet). Every parameter set is
+%                         simulated on this same environment.
+%     n_rounds            number of sessions (must equal size(rprobset,1))
+%     n_trials_per_block  trials per block
+%     n_blocks_per_round  blocks per session
+%     linear_env          (optional, default 1) 1 = arms on a line, 0 = circular
+%     sampling            (optional, default 'rand') how free params are drawn:
+%                         'rand' (uniform random), 'sobol' (scrambled Sobol),
+%                         'lhs' (Latin hypercube)
+%     param_seed          (optional, default 1) seed for drawing param sets
+%     sim_seed            (optional, default 2) seed for the simulations. The
+%                         generator is reset to this seed before every
+%                         parameter set, so all sets see the same random
+%                         numbers (common random numbers). Differences in
+%                         reward between sets then come from the parameters,
+%                         not from simulation noise.
+%     use_parfor          (optional, default true) run the sets in parallel
+%   reps         either a scalar (number of parameter sets to draw) or an
+%                n_sets x n_params matrix of parameter sets to simulate
+%
+% Output: struct fL with fields
+%   simParams    n_sets x n_params parameter sets
+%   free_params  indices of free (sampled) params
+%   choices      n_sets x n_rounds x n_trials int8, chosen arm (1..n_arms)
+%   rewards      n_sets x n_rounds x n_trials logical
+%   sess_reward  n_sets x n_rounds mean reward in each session
+%   mean_reward  n_sets x 1 mean reward over sessions
+%   sem_reward   n_sets x 1 SEM of the session rewards
+%   max_reward   n_rounds x 1 expected reward of always picking the best arm
+%   chance_reward n_rounds x 1 expected reward of picking arms at random
+%   plus the settings used (param_bnds, sampling, seeds, ...)
 
-if isfield(simParamSet,'rnd_seed')
-    rng(simParamSet.rnd_seed, 'twister'); % set seed only if provided
-end
-if ~isfield(simParamSet,'linear_env')
-    simParamSet.linear_env = 0; % Set default value for linear_env if not provided
+%% settings and defaults
+defaults = struct('linear_env', 1, 'sampling', 'rand', 'param_seed', 1, ...
+                  'sim_seed', 2, 'use_parfor', true);
+for f = fieldnames(defaults)'
+    if ~isfield(simParamSet, f{1})
+        simParamSet.(f{1}) = defaults.(f{1});
+    end
 end
 
 param_bnds = simParamSet.param_bnds;
-n_sim_params = size(simParamSet.param_bnds,2);
+n_params   = size(param_bnds, 2);
+free_params = find(param_bnds(2,:) > param_bnds(1,:));
 
+n_rounds  = simParamSet.n_rounds;
+n_tpb     = simParamSet.n_trials_per_block;
+n_blocks  = simParamSet.n_blocks_per_round;
+n_trials  = n_tpb * n_blocks;
+rprobset  = simParamSet.rprobset;
+
+assert(size(rprobset,1) == n_rounds, ...
+    'rprobset has %d sessions but n_rounds = %d', size(rprobset,1), n_rounds);
+assert(size(rprobset,2) == n_trials, ...
+    'rprobset has %d trials but n_trials_per_block*n_blocks_per_round = %d', ...
+    size(rprobset,2), n_trials);
+
+%% parameter sets
 if isscalar(reps)
-    n_reps = reps;
-    % generate sim params
-    rnd_nums = rand(n_reps,n_sim_params);
-    simParams = zeros(n_reps,size(param_bnds,2));
-    for rp = 1 : n_reps
-        simParams(rp,:) = rnd_nums(rp,:).*(param_bnds(2,:)-param_bnds(1,:))+param_bnds(1,:);
-    end
+    n_sets = reps;
+    rng(simParamSet.param_seed, 'twister');
+    u = sampleUnitCube(n_sets, numel(free_params), simParamSet.sampling);
+    simParams = repmat(param_bnds(1,:), n_sets, 1); % fixed params at their value
+    lb = param_bnds(1, free_params);
+    ub = param_bnds(2, free_params);
+    simParams(:, free_params) = lb + u .* (ub - lb);
 else
-    % sim params have been provided
     simParams = reps;
-    n_reps = size(reps,1);
+    n_sets = size(simParams, 1);
+    assert(size(simParams,2) == n_params, 'reps must have %d columns', n_params);
 end
 
-% compute performance for each rep of simParams
-avg_reward = zeros(n_reps,simParamSet.n_rounds);
-% avg_perfindex = zeros(n_reps,simParamSet.n_rounds);
-for rp = 1 : n_reps
-    % simulate choices and rewards
-    [choices, rewards, rprobs, ~] = simAlgosBlocked(simParamSet.algo, simParams(rp,:), ...
-        simParamSet.n_rounds, simParamSet.n_trials, simParamSet.rprobset, simParamSet.linear_env);
-    avg_reward(rp,:) = mean(rewards,2);
-    % perfindex = permute(calcPerfIndex(permute(choices,[3,1,2]),permute(rprobs,[3,1,2])),[2,3,1]);
-    % avg_perfindex(rp,:) = mean(perfindex,2);
+%% simulate
+% copy struct fields to plain variables so parfor broadcasts only what it needs
+algo       = simParamSet.algo;
+linear_env = simParamSet.linear_env;
+sim_seed   = simParamSet.sim_seed;
+
+choices = zeros(n_sets, n_rounds, n_trials, 'int8');
+rewards = false(n_sets, n_rounds, n_trials);
+
+if simParamSet.use_parfor
+    n_workers = Inf; % use the pool (starts one if none is open)
+else
+    n_workers = 0;   % run in serial on this worker
 end
 
-fitnessLandscape = struct;
-fitnessLandscape.param_bnds = param_bnds;
-fitnessLandscape.free_params = find((param_bnds(2,:)-param_bnds(1,:)) > 0);
-fitnessLandscape.simParams = simParams;
-fitnessLandscape.n_samps = n_reps;
-fitnessLandscape.n_reps = n_reps;
-fitnessLandscape.reward = avg_reward;
-% fitnessLandscape.perfindex = avg_perfindex;
+parfor (rp = 1 : n_sets, n_workers)
+    rng(sim_seed, 'twister'); % common random numbers for every param set
+    [c, r] = simAlgosBlocked(algo, simParams(rp,:), n_rounds, n_tpb, ...
+                             rprobset, linear_env, n_blocks);
+    choices(rp,:,:) = reshape(int8(c), 1, n_rounds, n_trials);
+    rewards(rp,:,:) = reshape(r > 0, 1, n_rounds, n_trials);
+end
+
+%% summaries
+sess_reward = mean(rewards, 3);                         % n_sets x n_rounds
+fL = struct;
+fL.algo          = algo;
+fL.param_bnds    = param_bnds;
+fL.free_params   = free_params;
+fL.sampling      = simParamSet.sampling;
+fL.param_seed    = simParamSet.param_seed;
+fL.sim_seed      = sim_seed;
+fL.linear_env    = linear_env;
+fL.n_sets        = n_sets;
+fL.n_rounds      = n_rounds;
+fL.n_trials      = n_trials;
+fL.simParams     = simParams;
+fL.choices       = choices;
+fL.rewards       = rewards;
+fL.sess_reward   = sess_reward;
+fL.mean_reward   = mean(sess_reward, 2);
+fL.sem_reward    = std(sess_reward, 0, 2) / sqrt(n_rounds);
+fL.max_reward    = mean(max(rprobset, [], 3), 2);
+fL.chance_reward = mean(mean(rprobset, 3), 2);
+
+end
+
+function u = sampleUnitCube(n, d, method)
+% n points in the d-dimensional unit cube
+switch lower(method)
+    case 'rand'
+        u = rand(n, d);
+    case 'sobol'
+        p = scramble(sobolset(d), 'MatousekAffineOwen');
+        u = net(p, n);
+    case 'lhs'
+        u = lhsdesign(n, d);
+    otherwise
+        error('Unknown sampling method "%s" (use rand, sobol or lhs)', method);
+end
+end
