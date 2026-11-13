@@ -7,6 +7,7 @@
 
 codedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/';
 savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/sim/';
+fitroot = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/';
 addpath([codedir 'HelperFunctions/']);
 
 %% settings
@@ -28,6 +29,13 @@ sampling   = 'rand';  % 'rand', 'sobol' or 'lhs'
 param_seed = 1;       % seed for drawing parameter sets
 sim_seed   = 2;       % seed for the simulations (same for every set)
 
+% parameter bounds: 'model' = full modelParamBounds range,
+%                   'fits'  = percentiles of the rats' fitted params
+bnds_source  = 'fits';
+bnds_prctile = [5 95];
+fit_dirs.unstr = [fitroot '20261003_allblock_unstr_rats/20261003_B_Qdghl/']; % ub rats
+fit_dirs.str   = [fitroot '20261003_allblock_str_rats/20261022_B_Qdghl/'];   % sb rats
+
 simParamSet = struct;
 simParamSet.model      = simModel;
 simParamSet.env        = env;
@@ -46,6 +54,38 @@ simParamSet.use_parfor = true;
 [simParamSet.algo, simParamSet.param_bnds, param_names, free_params] = modelParamBounds(char(simModel));
 simParamSet.param_names = param_names;
 free_params = find(free_params);
+simParamSet.model_bnds   = simParamSet.param_bnds;
+simParamSet.bnds_source  = bnds_source;
+
+switch bnds_source
+    case 'model'
+        % keep modelParamBounds
+    case 'fits'
+        % free params: bnds_prctile percentiles of the rats' fits; fixed params unchanged
+        [prc_bnds, fit_params] = fitParamPercentiles(fit_dirs.(env), bnds_prctile);
+        model_bnds = simParamSet.model_bnds;
+        new_bnds = min(max(prc_bnds(:, free_params), model_bnds(1, free_params)), model_bnds(2, free_params));
+        simParamSet.param_bnds(:, free_params) = new_bnds;
+
+        simParamSet.bnds_prctile = bnds_prctile;
+        simParamSet.fit_dir      = fit_dirs.(env);
+        simParamSet.fit_params   = fit_params;
+
+        fprintf('Bounds from %d fits in %s (%g-%g percentile):\n', size(fit_params,1), ...
+            fit_dirs.(env), bnds_prctile(1), bnds_prctile(2));
+        fprintf('  %-11s %18s %18s\n', 'param', 'model bounds', 'new bounds');
+        for p = free_params
+            fprintf('  %-11s [%7.3f, %7.3f] [%7.3f, %7.3f]\n', param_names(p), ...
+                model_bnds(1,p), model_bnds(2,p), simParamSet.param_bnds(1,p), simParamSet.param_bnds(2,p));
+        end
+        collapsed = free_params(simParamSet.param_bnds(1, free_params) == simParamSet.param_bnds(2, free_params));
+        if ~isempty(collapsed)
+            warning('Percentile bounds collapse to one value for: %s. These params will be fixed.', ...
+                strjoin(param_names(collapsed), ', '));
+        end
+    otherwise
+        error('bnds_source must be ''model'' or ''fits''');
+end
 
 % sessions: every parameter set is simulated on these same sessions
 rng(env_seed, 'twister');
@@ -54,23 +94,28 @@ rng(env_seed, 'twister');
 
 %% timing test: simulate a few sets and extrapolate
 
-n_test = 20;
-testSet = simParamSet;
-testSet.use_parfor = false;
-tic;
-fL_test = computeFitnessLandscape(testSet, n_test);
-t_test = toc;
-fprintf('%d sets: %.1f s (%.2f s/set) -> ~%.1f CPU-min for %d sets\n', ...
-    n_test, t_test, t_test/n_test, t_test/n_test*n_sets/60, n_sets);
+% n_test = 20;
+% testSet = simParamSet;
+% testSet.use_parfor = false;
+% tic;
+% fL_test = computeFitnessLandscape(testSet, n_test);
+% t_test = toc;
+% fprintf('%d sets: %.1f s (%.2f s/set) -> ~%.1f CPU-min for %d sets\n', ...
+%     n_test, t_test, t_test/n_test, t_test/n_test*n_sets/60, n_sets);
 
 %% run and save
 
-savefolder = sprintf('%s_landscape_%s', char(datetime("now","Format","yyyyMMdd")), env);
+% Slurm jobs (rLandscape_submit.sh) set the folder name, so results go
+% where the job's logs are; otherwise build it from today's date
+savefolder = getenv('LANDSCAPE_SAVEFOLDER');
+if isempty(savefolder)
+    savefolder = sprintf('%s_landscape_%s', char(datetime("now","Format","yyyyMMdd")), env);
+end
 savepath = fullfile(savedir, savefolder);
 if exist(savepath, 'dir') ~= 7
     mkdir(savepath);
 end
-savefile = fullfile(savepath, sprintf('%s_%s_n%d.mat', simModel, sampling, n_sets));
+savefile = fullfile(savepath, sprintf('%s_%s_n%d_%sbnds.mat', simModel, sampling, n_sets, bnds_source));
 if exist(savefile, 'file') == 2
     error('%s already exists; change the settings or delete it first', savefile);
 end
@@ -97,38 +142,38 @@ fprintf('Saved %s\n', savefile);
 
 %% quick look: top parameter sets vs all sets
 
-% load(savefile, 'fL', 'simParamSet'); % to start from a saved run
-top_pct = 1; % percent of best-performing sets to keep
+% % load(savefile, 'fL', 'simParamSet'); % to start from a saved run
+% top_pct = 1; % percent of best-performing sets to keep
 
-[~, order] = sort(fL.mean_reward, 'descend');
-n_top = max(1, round(fL.n_sets * top_pct/100));
-top_idx = order(1:n_top);
+% [~, order] = sort(fL.mean_reward, 'descend');
+% n_top = max(1, round(fL.n_sets * top_pct/100));
+% top_idx = order(1:n_top);
 
-fprintf('mean reward: best %.3f, top %g%% cutoff %.3f, median %.3f (max possible %.3f, chance %.3f)\n', ...
-    fL.mean_reward(order(1)), top_pct, fL.mean_reward(top_idx(end)), median(fL.mean_reward), ...
-    mean(fL.max_reward), mean(fL.chance_reward));
-fprintf('typical SEM of a set''s mean reward: %.4f\n', median(fL.sem_reward));
+% fprintf('mean reward: best %.3f, top %g%% cutoff %.3f, median %.3f (max possible %.3f, chance %.3f)\n', ...
+%     fL.mean_reward(order(1)), top_pct, fL.mean_reward(top_idx(end)), median(fL.mean_reward), ...
+%     mean(fL.max_reward), mean(fL.chance_reward));
+% fprintf('typical SEM of a set''s mean reward: %.4f\n', median(fL.sem_reward));
 
-h_rew = figure;
-histogram(fL.mean_reward, 100); hold on;
-xline(fL.mean_reward(top_idx(end)), 'r', sprintf('top %g%%', top_pct));
-xlabel('mean reward'); ylabel('# parameter sets'); title(simModel);
+% h_rew = figure;
+% histogram(fL.mean_reward, 100); hold on;
+% xline(fL.mean_reward(top_idx(end)), 'r', sprintf('top %g%%', top_pct));
+% xlabel('mean reward'); ylabel('# parameter sets'); title(simModel);
 
-h_par = figure;
-tiledlayout('flow', 'TileSpacing', 'compact');
-for p = free_params
-    nexttile;
-    edges = linspace(fL.param_bnds(1,p), fL.param_bnds(2,p), 21);
-    histogram(fL.simParams(:,p), edges, 'Normalization', 'pdf'); hold on;
-    histogram(fL.simParams(top_idx,p), edges, 'Normalization', 'pdf');
-    xlabel(param_names(p));
-end
-legend({'all', sprintf('top %g%%', top_pct)});
-sgtitle(sprintf('%s: params of top %g%% vs all sets', simModel, top_pct));
+% h_par = figure;
+% tiledlayout('flow', 'TileSpacing', 'compact');
+% for p = free_params
+%     nexttile;
+%     edges = linspace(fL.param_bnds(1,p), fL.param_bnds(2,p), 21);
+%     histogram(fL.simParams(:,p), edges, 'Normalization', 'pdf'); hold on;
+%     histogram(fL.simParams(top_idx,p), edges, 'Normalization', 'pdf');
+%     xlabel(param_names(p));
+% end
+% legend({'all', sprintf('top %g%%', top_pct)});
+% sgtitle(sprintf('%s: params of top %g%% vs all sets', simModel, top_pct));
 
-% in batch jobs (Slurm) nobody sees the figures, so save them next to the results
-if batchStartupOptionUsed
-    [~, fname] = fileparts(savefile);
-    exportgraphics(h_rew, fullfile(savepath, [fname '_reward.png']));
-    exportgraphics(h_par, fullfile(savepath, sprintf('%s_top%gpct_params.png', fname, top_pct)));
-end
+% % in batch jobs (Slurm) nobody sees the figures, so save them next to the results
+% if batchStartupOptionUsed
+%     [~, fname] = fileparts(savefile);
+%     exportgraphics(h_rew, fullfile(savepath, [fname '_reward.png']));
+%     exportgraphics(h_par, fullfile(savepath, sprintf('%s_top%gpct_params.png', fname, top_pct)));
+% end

@@ -4,3 +4,4 @@ output/r_recovery/*
 *.out
 *.err
 output/r_fits/comp*
+*.txt
