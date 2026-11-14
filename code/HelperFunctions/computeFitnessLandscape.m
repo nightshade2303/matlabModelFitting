@@ -27,6 +27,12 @@ function fL = computeFitnessLandscape(simParamSet, reps)
 %                         reward between sets then come from the parameters,
 %                         not from simulation noise.
 %     use_parfor          (optional, default true) run the sets in parallel
+%     param_transform     (optional, default all "none") 1 x n_params string
+%                         array, 'none' | 'log' | 'logit' (see transformParams).
+%                         Each free param is drawn uniformly in this space
+%                         between its transformed bounds, e.g. 'log' gives
+%                         log-uniform draws.
+%     transform_offset    (optional, default 1e-3) c in transformParams
 %   reps         either a scalar (number of parameter sets to draw) or an
 %                n_sets x n_params matrix of parameter sets to simulate
 %
@@ -44,7 +50,7 @@ function fL = computeFitnessLandscape(simParamSet, reps)
 
 %% settings and defaults
 defaults = struct('linear_env', 1, 'sampling', 'rand', 'param_seed', 1, ...
-                  'sim_seed', 2, 'use_parfor', true);
+                  'sim_seed', 2, 'use_parfor', true, 'transform_offset', 1e-3);
 for f = fieldnames(defaults)'
     if ~isfield(simParamSet, f{1})
         simParamSet.(f{1}) = defaults.(f{1});
@@ -53,6 +59,11 @@ end
 
 param_bnds = simParamSet.param_bnds;
 n_params   = size(param_bnds, 2);
+if ~isfield(simParamSet, 'param_transform')
+    simParamSet.param_transform = repmat("none", 1, n_params);
+end
+param_transform  = string(simParamSet.param_transform);
+transform_offset = simParamSet.transform_offset;
 free_params = find(param_bnds(2,:) > param_bnds(1,:));
 
 n_rounds  = simParamSet.n_rounds;
@@ -73,9 +84,14 @@ if isscalar(reps)
     rng(simParamSet.param_seed, 'twister');
     u = sampleUnitCube(n_sets, numel(free_params), simParamSet.sampling);
     simParams = repmat(param_bnds(1,:), n_sets, 1); % fixed params at their value
-    lb = param_bnds(1, free_params);
-    ub = param_bnds(2, free_params);
-    simParams(:, free_params) = lb + u .* (ub - lb);
+    for k = 1 : numel(free_params)
+        p = free_params(k);
+        % draw uniformly between the bounds in the param's transformed space
+        t_bnds = transformParams(param_bnds(:,p), param_transform(p), transform_offset, 'forward');
+        y = t_bnds(1) + u(:,k) * (t_bnds(2) - t_bnds(1));
+        x = transformParams(y, param_transform(p), transform_offset, 'inverse');
+        simParams(:, p) = min(max(x, param_bnds(1,p)), param_bnds(2,p)); % guard rounding at the bounds
+    end
 else
     simParams = reps;
     n_sets = size(simParams, 1);
@@ -112,6 +128,8 @@ fL.algo          = algo;
 fL.param_bnds    = param_bnds;
 fL.free_params   = free_params;
 fL.sampling      = simParamSet.sampling;
+fL.param_transform  = param_transform;
+fL.transform_offset = transform_offset;
 fL.param_seed    = simParamSet.param_seed;
 fL.sim_seed      = sim_seed;
 fL.linear_env    = linear_env;

@@ -553,27 +553,8 @@ switch algo
                     break;
                 end
 
-                % prev_choice = zeros(1,num_choices);
-                % prev_choice(choices(rd,tr-1)) = 1;
-
-                latent_vars(rd, tr, :, 1) = b; 
-
-                % update sticky variable
-                last_choice = zeros(1,num_choices);
-                last_choice(choices(rd,tr-1)) = 1;
-                h_a = h_a + lr_sty*(last_choice-h_a);
-                clip(h_a, 0, 1);
-
-                latent_vars(rd,tr,:,3) = h_a;
-                
-                % sticky
-                if sty_l > 0                    
-                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
-                else
-                    sticky_vec = sty_w * h_a;
-                end
-                
-                % calc gen 
+                % belief update from the previous trial's choice/outcome; the
+                % generalisation profile c_val is centred on that same choice
                 if gen_l > 0
                     c_val = (2*c*exp(-dist_mat(choices(rd, tr-1),:).^2 / (2*gen_l^2))) - c;
                 else
@@ -581,14 +562,7 @@ switch algo
                     c_val(choices(rd, tr-1)) = c;
                 end
 
-                choice_pref = b.*rnd_w + sticky_vec;                % inv temp x preferences + sticky bonus
-                choice_pref = choice_pref - max(choice_pref);
-                choice_prob = exp(choice_pref) / sum(exp(choice_pref));
-                latent_vars(rd, tr, :, 2) = choice_prob;
-
-                nll_mat(rd, tr-1) = -log(choice_prob(choices(rd, tr)));
-
-                l = stateInferenceLikelihood(choices(rd, tr), rewards(rd, tr), c_val, num_choices);
+                l = stateInferenceLikelihood(choices(rd, tr-1), rewards(rd, tr-1), c_val, num_choices);
                 b_post = l .* b;
 
                 if sum(b_post) > 0
@@ -597,7 +571,32 @@ switch algo
                     b_post = b;
                 end
 
-                b = b_post * T;
+                b = b_post * T; % belief used for this trial's choice
+
+                latent_vars(rd, tr, :, 1) = b;
+
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+
+                latent_vars(rd,tr,:,3) = h_a;
+
+                % sticky
+                if sty_l > 0
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
+                else
+                    sticky_vec = sty_w * h_a;
+                end
+
+                choice_pref = b.*rnd_w + sticky_vec;                % inv temp x preferences + sticky bonus
+                choice_pref = choice_pref - max(choice_pref);
+                choice_prob = exp(choice_pref) / sum(exp(choice_pref));
+                choice_prob(choice_prob==0) = eps;
+                latent_vars(rd, tr, :, 2) = choice_prob;
+
+                nll_mat(rd, tr-1) = -log(choice_prob(choices(rd, tr)));
             end
         end
 

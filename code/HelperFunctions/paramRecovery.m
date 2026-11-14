@@ -1,4 +1,4 @@
-function [recParams, simParams, rec_nll, rec_pR2, rec_aic, rec_bic] = paramRecovery(simParamSet, fitParamSet, n_reps)
+function [recParams, simParams, rec_nll, rec_pR2, rec_aic, rec_bic, rec_info] = paramRecovery(simParamSet, fitParamSet, n_reps)
 
 if ~isfield(fitParamSet,'linear_env')
     fitParamSet.linear_env = 1; % Set default value for linear_env if not provided
@@ -69,6 +69,7 @@ rec_nll = zeros(n_reps,1);
 rec_pR2 = zeros(n_reps,1);
 rec_aic = zeros(n_reps,1);
 rec_bic = zeros(n_reps,1);
+rec_info = cell(n_reps,1); % per-rep fit_info from fitModel (n_obs; fold-wise NLL/trials when cross-validating)
 
 % fitting loop over reps (parallel across reps; runs serially if no pool / no Parallel Computing Toolbox)
 fit_seed = simParamSet.rnd_seed;
@@ -76,7 +77,8 @@ parfor rp = 1 : n_reps
     % per-rep seed so random BADS starts are reproducible regardless of worker scheduling
     rng(fit_seed + rp, 'twister');
     disp(['Fitting rep ' num2str(rp)]);
-    [nll_rp, pR2_rp, params_rp, bic_rp, aic_rp] = fitModel(fitParamSet, choices(:,:,rp), rewards(:,:,rp), n_arms);
+    [nll_rp, pR2_rp, params_rp, bic_rp, aic_rp, info_rp] = fitModel(fitParamSet, choices(:,:,rp), rewards(:,:,rp), n_arms);
+    rec_info{rp} = info_rp;
     rec_nll(rp) = nll_rp;
     rec_pR2(rp) = pR2_rp;
     recParams(rp,:) = params_rp;

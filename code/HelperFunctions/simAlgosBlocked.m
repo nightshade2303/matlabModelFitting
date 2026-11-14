@@ -1,5 +1,8 @@
-function [choices, rewards, rew_probs, latent_vars] = simAlgosBlocked(algo, params, n_rounds, n_trials_per_block, ...
+function [choices, rewards, rew_probs, latent_vars, choice_prob_mat] = simAlgosBlocked(algo, params, n_rounds, n_trials_per_block, ...
                                                                     rprobset, linear_env, n_blocks_per_round)
+% choice_prob_mat: n_rounds x n_trials x arms, the softmax probabilities each choice was
+% drawn from (NaN on trial 1). Must equal calcNLL's per-trial choice probabilities for the
+% same params/choices/rewards.
 
 if nargin < 6
     linear_env = 1;
@@ -15,6 +18,7 @@ n_trials = n_trials_per_block*n_blocks_per_round;
 
 choices = zeros(n_rounds, n_trials);
 rewards = zeros(n_rounds, n_trials);
+choice_prob_mat = NaN(n_rounds, n_trials, num_choices);
 
 % assign rew probs to rounds
 % rew_probs = rprobset(randi(size(rprobset,1),n_rounds,1),:);
@@ -62,6 +66,7 @@ switch algo
         % block = 1;      
         
         for rd = 1 : n_rounds
+            h_a = zeros(1, num_choices); % sticky trace, reset each round (as in calcNLL)
             choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); % make a random choice on the first trial
             rewards(rd, 1) = 2*(rand_nums(rd,1,2) < rew_probs(rd, 1, choices(rd,1)))-1; % determine reward based on probability
 
@@ -87,21 +92,22 @@ switch algo
                 last_choice = zeros(1,num_choices);
                 last_choice(choices(rd,tr-1)) = 1;
                 h_a = h_a + lr_sty*(last_choice-h_a);
-                clip(h_a, 0, 1);
+                h_a = clip(h_a, 0, 1);
 
                 latent_vars(rd,tr,:,3) = h_a;
-                
-                % sticky
-                if sty_l > 0                    
+
+                % sticky (column vector, like mu)
+                if sty_l > 0
                     sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = sty_w * h_a;
+                    sticky_vec = sty_w * h_a';
                 end
-                
+
                 % softmax
                 choice_pref = (mu + ucb_w*sd)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
+                choice_prob_mat(rd,tr,:) = choice_probs;
 
                 choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs')]),1); % make a random choice for the current trial
                 rewards(rd, tr) = 2*(rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)))-1; % determine reward based on probability 
@@ -119,13 +125,17 @@ switch algo
 
         % unpack params
         gen_l = params(1); % length scale of GP
-        time_l = floor(params(2)); % length of memory window (is an integer)
+        time_l = params(2); % time scale of GP (fitted as a decay rate)
         mu0 = params(3); % mean function
         ucb_w = params(4); % weight of ucb param
         rnd_w = params(5); % weight of random exploration (inverse softmax temp)
         sty_w = params(6); % weight of sticky param
-        lr_sty = params(7);
-        sty_l = params(8); % length scale of sticky process   
+        lr_sty = params(7); % learning rate of sticky process
+        sty_l = params(8); % length scale of sticky process
+
+        if time_l < 1
+            time_l = 1/time_l; % convert from decay rate to time-constant (as in calcNLL)
+        end
 
         % GP settings
         meanfunc = @meanConst;
@@ -142,14 +152,9 @@ switch algo
             hyp = struct('mean', mean_const, 'cov', [gen_l, num_choices, time_l, sig_sd]);
             dist_mat = min(abs(choice_vec(:)-choice_vec), num_choices-abs(choice_vec(:)-choice_vec));
         else
-            covfunc = {@covProd, { ...
-                {@covMask, {[1 0], @covSEisoU}}, ...
-                {@covMask, {[0 1], {@covMaterniso, 1}}} ...
-            }};
-            hyp = struct( ...
-                'mean', mean_const, ...
-                'cov',  [log(gen_l), log(time_l), log(sig_sd)] ...
-            );
+            % same kernel as calcNLL: SE over arms x exponential decay over trials
+            covfunc = @cov_SElinearExpTime;
+            hyp = struct('mean', mean_const, 'cov', [gen_l, num_choices, time_l, sig_sd]);
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
@@ -184,21 +189,22 @@ switch algo
                 last_choice = zeros(1,num_choices);
                 last_choice(choices(rd,tr-1)) = 1;
                 h_a = h_a + lr_sty*(last_choice-h_a);
-                clip(h_a, 0, 1);
+                h_a = clip(h_a, 0, 1);
 
                 latent_vars(rd,tr,:,3) = h_a;
-                
-                % sticky
-                if sty_l > 0                    
+
+                % sticky (column vector, like mu)
+                if sty_l > 0
                     sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a');
                 else
-                    sticky_vec = sty_w * h_a;
+                    sticky_vec = sty_w * h_a';
                 end
-                
+
                 % softmax
                 choice_pref = (mu + ucb_w*sd)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref); % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref)); % softmax
+                choice_prob_mat(rd,tr,:) = choice_probs;
 
                 choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs')]),1); % make a choice for the current trial
                 rewards(rd, tr) = 2*(rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)))-1; % determine reward based on probability                
@@ -287,10 +293,11 @@ switch algo
                 choice_pref = choice_pref - max(choice_pref);  % to avoid overflow errors in softmax
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref));  % softmax
                 choice_probs(choice_probs==0) = eps;
+                choice_prob_mat(rd,tr,:) = choice_probs;
 
                 choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
-                rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)); % determine reward based on probability 
-                
+                rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)); % determine reward based on probability
+
 
                 % if (rem(tr, n_trials_per_block) == 0)
                 %     block = block + 1;
@@ -389,8 +396,9 @@ switch algo
         mu0 = params(4); % initial mean for beta distr
         ucb_w = params(5); % weight of ucb param
         rnd_w = params(6); % weight of random exploration (inverse softmax temp)
-        sty_w = params(7); % weight of sticky param        
-        sty_l = params(8);  % length scale of sticky process    
+        sty_w = params(7); % weight of sticky param
+        lr_sty = params(8); % learning rate of sticky process
+        sty_l = params(9);  % length scale of sticky process
 
         a0 = 2*mu0; % initial a value for beta distribution
         b0 = 2*(1-mu0); % initial b value for beta distribution
@@ -402,12 +410,13 @@ switch algo
             dist_mat = abs(choice_vec(:)-choice_vec);
         end
 
-        latent_vars = zeros(n_rounds, n_trials, num_choices, 2); % beta distr mean and sd
+        latent_vars = zeros(n_rounds, n_trials, num_choices, 3); % beta distr mean and sd, sticky_vec
         % block = 1;
         for rd = 1 : n_rounds
             S = zeros(1,num_choices);
             F = zeros(1,num_choices);
-            
+            h_a = zeros(1,num_choices);
+
             beta_m0 = a0./(a0+b0); beta_sd0 = sqrt(beta_m0.*(1-beta_m0)./(a0+b0+1));
             latent_vars(rd,1,:,1) = beta_m0; latent_vars(rd,1,:,2) = beta_sd0;
 
@@ -442,17 +451,25 @@ switch algo
 
                 latent_vars(rd,tr,:,1) = beta_m; latent_vars(rd,tr,:,2) = beta_sd;
 
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+
+                % sticky
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
                 else
-                    sticky_vec = zeros(1,num_choices);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
-        
+                latent_vars(rd,tr,:,3) = sticky_vec;
+
                 choice_pref = (beta_m + ucb_w*beta_sd)*rnd_w + sticky_vec;
                 choice_pref = choice_pref - max(choice_pref);
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref));
                 choice_probs(choice_probs==0) = eps;
+                choice_prob_mat(rd,tr,:) = choice_probs;
 
                 choices(rd, tr) = find(histcounts(rand_nums(rd,tr,1), [0,cumsum(choice_probs)]),1); % make a choice for the current trial
                 rewards(rd, tr) = rand_nums(rd,tr,2) < rew_probs(rd, tr, choices(rd, tr)); % determine reward based on probability
@@ -523,9 +540,10 @@ switch algo
         c = params(2);        % observation confidence / evidence strength
         gen_l = params(3);  % generalzation length scale
         rnd_w = params(4);    % softmax temperature 
-        sty_w = params(5);   % weight of sticky param        
-        sty_l = params(6);   % length scale of sticky process 
-    
+        sty_w = params(5);   % weight of sticky param
+        lr_sty = params(6);  % learning rate of sticky process
+        sty_l = params(7);   % length scale of sticky process
+
         if num_choices ~= 4
             error('StateInference expects 4 choices, but received %d. Go write your own model.', num_choices);
         end
@@ -543,10 +561,11 @@ switch algo
             0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam, 0.25-0.25*gam;
             0.25-0.25*gam, 0.25-0.25*gam, 0.25-0.25*gam, 0.25+0.75*gam];
 
-        latent_vars = NaN(n_rounds, n_trials, num_choices, 2);
+        latent_vars = NaN(n_rounds, n_trials, num_choices, 3); % beliefs, choice probs, h_a
 
         for rd = 1 : n_rounds
             b = b0;  % set initial state of the beliefs
+            h_a = zeros(1,num_choices);
 
             % make a random choice on the first trial
             choices(rd, 1) = ceil(rand_nums(rd,1,1)*num_choices); 
@@ -574,18 +593,26 @@ switch algo
 
                 latent_vars(rd, tr, :, 1) = b;
 
+                % update sticky variable
+                last_choice = zeros(1,num_choices);
+                last_choice(choices(rd,tr-1)) = 1;
+                h_a = h_a + lr_sty*(last_choice-h_a);
+                h_a = clip(h_a, 0, 1);
+                latent_vars(rd, tr, :, 3) = h_a;
+
+                % sticky
                 if sty_l > 0
-                    sticky_vec = exp(-dist_mat(choices(rd,tr-1),:).^2 / (2*sty_l^2)) * sty_w;
+                    sticky_vec = sty_w * (exp(-dist_mat.^2 / (2*sty_l^2))' * h_a')';
                 else
-                    sticky_vec = zeros(1,num_choices);
-                    sticky_vec(choices(rd,tr-1)) = sty_w;
+                    sticky_vec = sty_w * h_a;
                 end
-                
+
                 choice_pref = b.*rnd_w + sticky_vec;                % inv temp x preferences + sticky bonus
                 choice_pref = choice_pref - max(choice_pref);
                 choice_probs = exp(choice_pref) / sum(exp(choice_pref));
                 choice_probs(choice_probs == 0) = eps;
                 latent_vars(rd, tr, :, 2) = choice_probs;
+                choice_prob_mat(rd,tr,:) = choice_probs;
 
 
                 % nll_mat(rd, tr-1) = -log(choice_prob(choices(rd, tr)));

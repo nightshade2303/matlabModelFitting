@@ -3,14 +3,14 @@
 %% Load dataset
 
 % unstructured dataset
-% if exist("rMABpre","var") ~= 1
-%     load("../../data/rMABpre_20261003.mat", "rMABpre");
-% end
+if exist("rMABpre","var") ~= 1
+    load("../../data/rMABpre_20261113.mat", "rMABpre");
+end
 
 % structured dataset
-if exist("rMABpre","var") ~= 1
-    load("../../data/rMABstr_20261003.mat", "rMABpre");
-end
+% if exist("rMABpre","var") ~= 1
+%     load("../../data/rMABstr_20261113.mat", "rMABpre");
+% end
 
 % lesioned dataset
 % if exist("rMABlesions","var") ~= 1
@@ -21,15 +21,15 @@ end
 
 rFitParams = struct;
 
-savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/';
+savedir = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_unstr_rats/';
 % savedir = '/n/home09/dhawale/Rishika/output/r_fits/20260912_allblock_unstr_rats/';
 slurm_file = '/mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh';  % change this maybe?
 % slurm_file = '/n/home09/dhawale/Rishika/output/r_fits/rMAB_submit.sh';
 
 %% Task, sess and round structure
 
-fitName = 'sb_all';
-rFitParams.task = '4ABstr';
+fitName = 'ub_all';
+rFitParams.task = '4ABunstr';
 % rFitParams.rounds = {1:100};
 % trials and sessions are defined individually for each animal in fitRatData.m
 
@@ -41,10 +41,10 @@ rFitParams.task = '4ABstr';
 % rFitParams.task = '4ABstr';
 
 % info about fitting
-rFitParams.crossval = 'kfold'; % kfold or none or looc
+rFitParams.crossval = 'none'; % kfold or none or looc
 rFitParams.optim = 'bads'; % 'bads' or 'fmin'
-rFitParams.kfolds = 5;
-rFitParams.iters = 1;
+rFitParams.kfolds = 1;
+rFitParams.iters = 5;
 rFitParams.linear_env = 1;
 rFitParams.rnd_flag = 0;
 
@@ -98,7 +98,7 @@ test_rat = {'Onix'};
 % specify subject indices - if 4ABunstr in task list then select those animals
 % subjIndices = find(contains({rMABpre.task}, rFitParams.task));
 % subjIndices = find(contains({rMABstr.task}, rFitParams.task));
-subjIndices = find(contains({rMABpre.ratName}, str_rats));
+subjIndices = find(contains({rMABpre.ratName}, blocked_rats));
 % subjIndices = find(contains({rMABlesions.ratName}, sham_rats));
 
 rFitParams.subjIndices = subjIndices;
@@ -114,7 +114,7 @@ rFitParams.subjIndices = subjIndices;
 % modelList = ["I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
 % modelList = ["Gdmhl", "Gdmu", "Gdmuh", "Gdmuhl", "Gdmusl", "Gduhl", "Gmusl"];
 % modelList = ["Qdghl"];
-modelList = ["Qd", "Qg", "Qghl", "Qdhl"];
+modelList = ["Q","Qd", "Qg","Qh","Qdh", "Qdg","Qgh" "Qghl", "Qdhl", "Qdghl", "B", "Bu", "Bdu", "Bduhl", "Bduh","Buhl", "Bdhl", "Gduhl", "G", "Guhl", "Gdhl", "Gdu", "Gduh", "I", "Ih", "Ihl", "Igh", "Ighl", "Igsl"];
 fitData = 'B';
 
 for fitModel = modelList
@@ -152,7 +152,7 @@ for fitModel = modelList
     %% format sbatch command
     cmd = sprintf('cd %s/Jobs/', savepath(1:end - 1));
     disp(cmd);
-    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-9 %s %s/%s', ...
-        char(fitData),char(fitModel),char(slurm_file),'20261003_allblock_str_cv_rats',savefolder(1:end-1));
+    cmd = sprintf('sbatch -J %s_%s -t 3-00:00 --array=1-17 %s %s/%s', ...
+        char(fitData),char(fitModel),char(slurm_file),'20261113_allblock_unstr_rats',savefolder(1:end-1));
     disp(cmd);
 end

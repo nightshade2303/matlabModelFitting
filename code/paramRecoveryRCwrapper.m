@@ -29,16 +29,11 @@ if isempty(gcp('nocreate')) && n_workers > 1
 end
 
 tic;
-switch fitParamSet.crossval
-    case 'none'
-        [recParams, simParams, rec_nll, rec_pR2, rec_aic, rec_bic] = paramRecovery(simParamSet, fitParamSet, n_reps);
-        % save fit results to disk
-        save([simRecPath '_result.mat'],'recParams','simParams','rec_nll','rec_pR2','rec_aic','rec_bic','n_reps');
-    otherwise 
-        [recParams, simParams, rec_nll, rec_pR2] = paramRecovery(simParamSet, fitParamSet, n_reps);
-        % save fit results to disk
-        save([simRecPath '_result.mat'],'recParams','simParams','rec_nll','rec_pR2','n_reps');
-end
+% rec_nll is the in-sample NLL (crossval 'none') or the summed held-out NLL (crossval);
+% rec_info{rep} holds n_obs and, when cross-validating, fold-wise NLL / trial counts / params
+[recParams, simParams, rec_nll, rec_pR2, rec_aic, rec_bic, rec_info] = paramRecovery(simParamSet, fitParamSet, n_reps);
+% save fit results to disk
+save([simRecPath '_result.mat'],'recParams','simParams','rec_nll','rec_pR2','rec_aic','rec_bic','rec_info','n_reps');
 disp('Param recovery completed.');
 toc;
 end

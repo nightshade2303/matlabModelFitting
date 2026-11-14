@@ -30,11 +30,23 @@ param_seed = 1;       % seed for drawing parameter sets
 sim_seed   = 2;       % seed for the simulations (same for every set)
 
 % parameter bounds: 'model' = full modelParamBounds range,
-%                   'fits'  = percentiles of the rats' fitted params
-bnds_source  = 'fits';
-bnds_prctile = [5 95];
-fit_dirs.unstr = [fitroot '20261003_allblock_unstr_rats/20261003_B_Qdghl/']; % ub rats
-fit_dirs.str   = [fitroot '20261003_allblock_str_rats/20261022_B_Qdghl/'];   % sb rats
+%                   'fits'  = from Gaussian fits to the rats' fitted params:
+%                             per param, the first of raw/log/logit under which
+%                             the rats look normal (Anderson-Darling; raw if
+%                             none), a Gaussian fit in that space, then
+%                             mu +/- n_sd SD (see fitParamBounds)
+bnds_source = 'fits';
+fit_dirs = {[fitroot '20261003_allblock_unstr_rats/20261003_B_Qdghl/'], ... % ub rats
+            [fitroot '20261003_allblock_str_rats/20261022_B_Qdghl/']};      % sb rats (pooled with ub)
+cohort_names = {'ub', 'sb'};
+fit_opts = struct;
+fit_opts.max_nll_per_trial = log(n_arms); % exclude fits with nll <= 0 / NaN (nothing fit) or nll per trial >= this (chance)
+bnd_opts = struct;
+bnd_opts.alpha  = 0.05;           % normality test significance level
+bnd_opts.n_sd   = 2;              % range = mu +/- n_sd SD
+bnd_opts.offset = 1e-3;           % keeps log/logit finite for rats at 0 (or 1)
+bnd_opts.fit_method = 'mle';      % Gaussian fit that sets the bounds: 'mle' (fitdist) or 'curve' (least squares on the histogram)
+bnd_opts.n_bins = 8;              % histogram bins for the curve fit (and the plot)
 
 simParamSet = struct;
 simParamSet.model      = simModel;
@@ -61,27 +73,109 @@ switch bnds_source
     case 'model'
         % keep modelParamBounds
     case 'fits'
-        % free params: bnds_prctile percentiles of the rats' fits; fixed params unchanged
-        [prc_bnds, fit_params] = fitParamPercentiles(fit_dirs.(env), bnds_prctile);
+        % free params: from the pooled rats' fits; fixed params unchanged
+        [fit_params, cohort, fit_info] = loadFitParams(fit_dirs, fit_opts);
+        bad = fit_info(fit_info.excluded, :);
+        for k = 1 : height(bad)
+            fprintf('excluded: %s (%s, %s): %s\n', bad.rat(k), cohort_names{bad.cohort(k)}, bad.file(k), bad.reason(k));
+        end
+        simParamSet.fit_info = fit_info;
         model_bnds = simParamSet.model_bnds;
-        new_bnds = min(max(prc_bnds(:, free_params), model_bnds(1, free_params)), model_bnds(2, free_params));
-        simParamSet.param_bnds(:, free_params) = new_bnds;
+        [simParamSet.param_bnds, simParamSet.param_transform, bnds_info] = ...
+            fitParamBounds(fit_params, model_bnds, free_params, bnd_opts);
+        simParamSet.transform_offset = bnd_opts.offset;
 
-        simParamSet.bnds_prctile = bnds_prctile;
-        simParamSet.fit_dir      = fit_dirs.(env);
+        simParamSet.fit_dirs     = fit_dirs;
+        simParamSet.cohort_names = cohort_names;
         simParamSet.fit_params   = fit_params;
+        simParamSet.cohort       = cohort;
+        simParamSet.bnds_info    = bnds_info;
 
-        fprintf('Bounds from %d fits in %s (%g-%g percentile):\n', size(fit_params,1), ...
-            fit_dirs.(env), bnds_prctile(1), bnds_prctile(2));
-        fprintf('  %-11s %18s %18s\n', 'param', 'model bounds', 'new bounds');
+        fprintf(['Gaussian fits to %d rats (%s). Space = first of raw/log/logit passing Anderson-Darling (alpha %g), raw if none.\n' ...
+            'Bounds = mu +/- %g SD of the %s fit, in that space, clipped to the model bounds.\n'], ...
+            size(fit_params,1), strjoin(compose('%s %d', string(cohort_names(:)), histcounts(cohort, 0.5:1:numel(fit_dirs)+0.5)'), ', '), ...
+            bnd_opts.alpha, bnd_opts.n_sd, upper(bnd_opts.fit_method));
+        fprintf('  %-11s %-6s %-11s %-22s %-36s %-32s %-5s %s\n', 'param', 'space', 'normal?', 'A-D p (none/log/logit)', ...
+            'MLE mu [95% CI]   sd [95% CI]', 'curve mu [95% CI]   sd', 'R2', 'new bounds (raw)');
         for p = free_params
-            fprintf('  %-11s [%7.3f, %7.3f] [%7.3f, %7.3f]\n', param_names(p), ...
-                model_bnds(1,p), model_bnds(2,p), simParamSet.param_bnds(1,p), simParamSet.param_bnds(2,p));
+            pv = sprintf('%.3f ', bnds_info.pvals{p});
+            if bnds_info.normal(p), nrm = 'yes'; else, nrm = 'NOT NORMAL'; end
+            fprintf('  %-11s %-6s %-11s %-22s %6.3f [%6.3f %6.3f] %5.3f [%5.3f %5.3f]  %6.3f [%6.3f %6.3f] %5.3f  %5.2f [%7.3f, %7.3f]\n', ...
+                param_names(p), bnds_info.space(p), nrm, pv, ...
+                bnds_info.mle_mu(p), bnds_info.mle_mu_ci(:,p), bnds_info.mle_sd(p), bnds_info.mle_sd_ci(:,p), ...
+                bnds_info.curve_mu(p), bnds_info.curve_mu_ci(:,p), bnds_info.curve_sd(p), bnds_info.curve_r2(p), ...
+                simParamSet.param_bnds(1,p), simParamSet.param_bnds(2,p));
+        end
+        flagged = free_params(~isnan(bnds_info.curve_mu(free_params)) & ~bnds_info.curve_ok(free_params));
+        if ~isempty(flagged)
+            msg = sprintf('Curve fit ended at its limits (center at the data edge or width at max) for: %s.', ...
+                strjoin(param_names(flagged), ', '));
+            if strcmp(bnd_opts.fit_method, 'curve')
+                msg = [msg ' Their bounds use the MLE fit instead.'];
+            end
+            warning(msg); %#ok<SPWRN>
+        end
+        if ~all(bnds_info.normal(free_params))
+            warning('No transform looks normal for: %s. Using a Gaussian fit in raw space for these.', ...
+                strjoin(param_names(free_params(~bnds_info.normal(free_params))), ', '));
         end
         collapsed = free_params(simParamSet.param_bnds(1, free_params) == simParamSet.param_bnds(2, free_params));
         if ~isempty(collapsed)
-            warning('Percentile bounds collapse to one value for: %s. These params will be fixed.', ...
+            warning('Bounds collapse to one value for: %s. These params will be fixed.', ...
                 strjoin(param_names(collapsed), ', '));
+        end
+
+        % diagnostic plot per param: the histogram the curve was fit to (stacked
+        % by cohort), the MLE and curve-fit Gaussians, and the simulation range
+        % (skipped in batch jobs: no display)
+        if ~batchStartupOptionUsed
+            h_fits = figure('Position', [100 100 1200 800]);
+            tiledlayout('flow', 'TileSpacing', 'compact');
+            for p = free_params
+                nexttile; hold on;
+                t = bnds_info.space(p);
+                y = transformParams(fit_params(:,p), t, bnd_opts.offset, 'forward');
+                edges = bnds_info.hist_edges{p};
+                if isempty(edges), edges = y(1) + [-0.5 0.5]; end % all rats at one value
+                bw = edges(2) - edges(1);
+                centers = (edges(1:end-1) + edges(2:end)) / 2;
+                counts_by_cohort = zeros(numel(centers), numel(fit_dirs));
+                for k = 1 : numel(fit_dirs)
+                    counts_by_cohort(:, k) = histcounts(y(cohort == k), edges);
+                end
+                hb = bar(centers, counts_by_cohort, 1, 'stacked', 'FaceAlpha', 0.6);
+                for k = 1 : numel(fit_dirs), hb(k).DisplayName = cohort_names{k}; end
+
+                y_bnds = transformParams(simParamSet.param_bnds(:,p), t, bnd_opts.offset, 'forward');
+                yy = linspace(min([edges(:); y_bnds]), max([edges(:); y_bnds]), 300);
+                if ~isnan(bnds_info.mle_mu(p))
+                    plot(yy, normpdf(yy, bnds_info.mle_mu(p), bnds_info.mle_sd(p)) * numel(y) * bw, ...
+                        'k-', 'LineWidth', 1.5, 'DisplayName', 'MLE');
+                end
+                if ~isnan(bnds_info.curve_mu(p))
+                    % the fitted curve itself (its own height a, not rescaled)
+                    plot(yy, bnds_info.curve_a(p) * exp(-((yy - bnds_info.curve_mu(p)) / (sqrt(2)*bnds_info.curve_sd(p))).^2), ...
+                        'r--', 'LineWidth', 1.5, 'DisplayName', 'curve fit');
+                end
+                xline(y_bnds, 'k:', 'LineWidth', 1, 'HandleVisibility', 'off');
+
+                if t == "none", xlabel(param_names(p)); else, xlabel(sprintf('%s(%s)', t, param_names(p))); end
+                ylabel('# rats');
+                p_space = bnds_info.pvals{p}(bnds_info.tried{p} == t); % A-D p in the plotted space
+                ttl = sprintf('A-D p = %.3f, curve R^2 = %.2f', p_space, bnds_info.curve_r2(p));
+                if ~isnan(bnds_info.curve_mu(p)) && ~bnds_info.curve_ok(p)
+                    ttl = [ttl ' (curve at limit)'];
+                end
+                if ~bnds_info.normal(p)
+                    title({'NOT NORMAL (raw)', ttl}, 'Color', [0.8 0 0]);
+                else
+                    title(ttl);
+                end
+            end
+            lgd = legend;
+            lgd.Layout.Tile = 'east'; % outside the panels
+            sgtitle(sprintf('%s: Gaussian fits to %d rats; dotted = \\pm%g SD range (%s)', ...
+                simModel, size(fit_params,1), bnd_opts.n_sd, upper(bnd_opts.fit_method)));
         end
     otherwise
         error('bnds_source must be ''model'' or ''fits''');

@@ -1,4 +1,8 @@
-function [fit_nll, fit_pR2, fit_params, fit_bic, fit_aic] = fitModel(fitParamSet, choices, rewards, num_choices)
+function [fit_nll, fit_pR2, fit_params, fit_bic, fit_aic, fit_info] = fitModel(fitParamSet, choices, rewards, num_choices)
+% fit_info (struct):
+%   n_obs           number of predicted trials (excl. first trial of each round and NaN padding)
+%   crossval only:  fold_test_nll, fold_train_nll (kfolds x 1), fold_n_test, fold_n_train
+%                   (predicted trials per fold), fold_params (kfolds x n_params)
 
 if ~isfield(fitParamSet,'optim')
     fitParamSet.optim = 'bads';
@@ -14,6 +18,8 @@ end
 
 fit_aic = [];
 fit_bic = [];
+fit_info = struct;
+fit_info.n_obs = sum(~isnan(choices(:,2:end)), "all"); % trials predicted (excl. first trial and NaN padding)
 
 % Unpack fit params
 iters = fitParamSet.iters;
@@ -88,14 +94,16 @@ switch fitParamSet.crossval
         
         n_free_params = sum(param_bnds(2,:)~=param_bnds(1,:)); % number of free params for the fit
         fit_aic = 2*fit_nll + 2*n_free_params;
-        n_obs = sum(~isnan(choices(:,1:end)), "all"); % trials predicted (excl. first trial and NaN padding)
-        fit_bic = 2*fit_nll + log(n_obs)*n_free_params;
+        fit_bic = 2*fit_nll + log(fit_info.n_obs)*n_free_params;
 
     otherwise
         % cross validation
         cv_k = cvpartition(n_rounds, "KFold", kfolds);  
         k_params = zeros(kfolds,n_params);
-        test_nll = zeros(kfolds,1); 
+        test_nll = zeros(kfolds,1);
+        train_nll = zeros(kfolds,1);
+        n_test = zeros(kfolds,1);
+        n_train = zeros(kfolds,1);
 
         for k = 1 : kfolds
             st = zeros(iters, n_params); % to store random starts
@@ -121,11 +129,18 @@ switch fitParamSet.crossval
                         [iter_params(i,:), iter_train_nlls(i)] = fmincon(funNLL, st(i,:), [], [], [], [], lb, ub, [], options);
                 end
             end
-            [~, best_iter] = min(iter_train_nlls);
+            [train_nll(k), best_iter] = min(iter_train_nlls);
             k_params(k,:) = iter_params(best_iter,:);
-            test_nll(k) = calcNLL(iter_params(best_iter,:), algo, choices(cv_k.test(k),:), rewards(cv_k.test(k),:), num_choices, linear_env);          
+            test_nll(k) = calcNLL(iter_params(best_iter,:), algo, choices(cv_k.test(k),:), rewards(cv_k.test(k),:), num_choices, linear_env);
+            n_test(k) = sum(~isnan(choices(cv_k.test(k),2:end)), "all");
+            n_train(k) = sum(~isnan(choices(cv_k.training(k),2:end)), "all");
         end
-        fit_nll = sum(test_nll);        
+        fit_info.fold_test_nll = test_nll;
+        fit_info.fold_train_nll = train_nll;
+        fit_info.fold_n_test = n_test;
+        fit_info.fold_n_train = n_train;
+        fit_info.fold_params = k_params;
+        fit_nll = sum(test_nll);
         fit_pR2 = 1 - fit_nll/rnd_nll;
         fit_params = mean(k_params,1); 
         % fit_params = median(k_params,1); % alternative
@@ -134,7 +149,6 @@ switch fitParamSet.crossval
             nll_for_abic = calcNLL(fit_params, algo, choices, rewards, num_choices, linear_env); 
             n_free_params = sum(param_bnds(2,:)~=param_bnds(1,:)); % number of free params for the fit
             fit_aic = 2*nll_for_abic + 2*n_free_params;
-            n_obs = sum(~isnan(choices(:,1:end)), "all"); % trials predicted (excl. first trial and NaN padding)
-            fit_bic = 2*nll_for_abic + log(n_obs)*n_free_params;
+            fit_bic = 2*nll_for_abic + log(fit_info.n_obs)*n_free_params;
         end
 end

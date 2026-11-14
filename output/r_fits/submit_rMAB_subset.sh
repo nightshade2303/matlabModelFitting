@@ -262,142 +262,127 @@
 
 
 #### structured
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Q/Jobs/
-# sbatch -J B_Q -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Q
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qgmhl/Jobs/
-# sbatch -J B_Qgmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qgmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdmhl/Jobs/
-# sbatch -J B_Qdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdghl/Jobs/
-# sbatch -J B_Qdghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdghl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgmh/Jobs/
-# sbatch -J B_Qdgmh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgmh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgm/Jobs/
-# sbatch -J B_Qdgm -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgm
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgmhl/Jobs/
-# sbatch -J B_Qdgmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgmuhl/Jobs/
-# sbatch -J B_Qdgmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgmsl/Jobs/
-# sbatch -J B_Qdgmsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgmsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgmusl/Jobs/
-# sbatch -J B_Qdgmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgmusl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qgmsl/Jobs/
-# sbatch -J B_Qgmsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qgmsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgsl/Jobs/
-# sbatch -J B_Qdgsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Qdgms/Jobs/
-# sbatch -J B_Qdgms -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Qdgms
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_B/Jobs/
-# sbatch -J B_B -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_B
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bmuhl/Jobs/
-# sbatch -J B_Bmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bduhl/Jobs/
-# sbatch -J B_Bduhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bduhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bdmhl/Jobs/
-# sbatch -J B_Bdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bdmuh/Jobs/
-# sbatch -J B_Bdmuh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bdmuh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bdmu/Jobs/
-# sbatch -J B_Bdmu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bdmu
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Bdmuhl/Jobs/
-# sbatch -J B_Bdmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Bdmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_I/Jobs/
-# sbatch -J B_I -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_I
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Ih/Jobs/
-# sbatch -J B_Ih -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Ih
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Ihl/Jobs/
-# sbatch -J B_Ihl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Ihl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Igh/Jobs/
-# sbatch -J B_Igh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Igh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Ighl/Jobs/
-# sbatch -J B_Ighl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Ighl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261022_B_Igsl/Jobs/
-# sbatch -J B_Igsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261022_B_Igsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gdmhl/Jobs/
-# sbatch -J B_Gdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gdmu/Jobs/
-# sbatch -J B_Gdmu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gdmu
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gdmuh/Jobs/
-# sbatch -J B_Gdmuh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gdmuh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gdmuhl/Jobs/
-# sbatch -J B_Gdmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gdmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gdmusl/Jobs/
-# sbatch -J B_Gdmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gdmusl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gduhl/Jobs/
-# sbatch -J B_Gduhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gduhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_rats/20261027_B_Gmusl/Jobs/
-# sbatch -J B_Gmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_rats/20261027_B_Gmusl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Q/Jobs/
+# sbatch -J B_Q -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Q
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qd/Jobs/
+# sbatch -J B_Qd -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qd
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qg/Jobs/
+# sbatch -J B_Qg -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qg
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qh/Jobs/
+# sbatch -J B_Qh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qdh/Jobs/
+# sbatch -J B_Qdh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qdh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qdg/Jobs/
+# sbatch -J B_Qdg -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qdg
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qgh/Jobs/
+# sbatch -J B_Qgh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qgh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qghl/Jobs/
+# sbatch -J B_Qghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qghl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qdhl/Jobs/
+# sbatch -J B_Qdhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Qdghl/Jobs/
+# sbatch -J B_Qdghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Qdghl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_B/Jobs/
+# sbatch -J B_B -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_B
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Bu/Jobs/
+# sbatch -J B_Bu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Bu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Bdu/Jobs/
+# sbatch -J B_Bdu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Bdu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Bduhl/Jobs/
+# sbatch -J B_Bduhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Bduhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Bduh/Jobs/
+# sbatch -J B_Bduh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Bduh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Buhl/Jobs/
+# sbatch -J B_Buhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Buhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Bdhl/Jobs/
+# sbatch -J B_Bdhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Bdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Gduhl/Jobs/
+# sbatch -J B_Gduhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Gduhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_G/Jobs/
+# sbatch -J B_G -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_G
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Guhl/Jobs/
+# sbatch -J B_Guhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Guhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Gdhl/Jobs/
+# sbatch -J B_Gdhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Gdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Gdu/Jobs/
+# sbatch -J B_Gdu -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Gdu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Gduh/Jobs/
+# sbatch -J B_Gduh -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Gduh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_I/Jobs/
+# sbatch -J B_I -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_I
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Ih/Jobs/
+# sbatch -J B_Ih -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Ih
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Ihl/Jobs/
+# sbatch -J B_Ihl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Ihl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Igh/Jobs/
+# sbatch -J B_Igh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Igh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Ighl/Jobs/
+# sbatch -J B_Ighl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Ighl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_rats/20261113_B_Igsl/Jobs/
+# sbatch -J B_Igsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_rats/20261113_B_Igsl
 
 
 
 ### sturtcured cv rats
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Q/Jobs/
-# sbatch -J B_Q -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Q
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qgmhl/Jobs/
-# sbatch -J B_Qgmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qgmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdmhl/Jobs/
-# sbatch -J B_Qdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdghl/Jobs/
-# sbatch -J B_Qdghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdghl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgmh/Jobs/
-# sbatch -J B_Qdgmh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgmh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgm/Jobs/
-# sbatch -J B_Qdgm -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgm
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgmhl/Jobs/
-# sbatch -J B_Qdgmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgmuhl/Jobs/
-# sbatch -J B_Qdgmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgmsl/Jobs/
-# sbatch -J B_Qdgmsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgmsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgmusl/Jobs/
-# sbatch -J B_Qdgmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgmusl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qgmsl/Jobs/
-# sbatch -J B_Qgmsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qgmsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgsl/Jobs/
-# sbatch -J B_Qdgsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgsl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Qdgms/Jobs/
-# sbatch -J B_Qdgms -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Qdgms
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_B/Jobs/
-# sbatch -J B_B -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_B
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bmuhl/Jobs/
-# sbatch -J B_Bmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bduhl/Jobs/
-# sbatch -J B_Bduhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bduhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bdmhl/Jobs/
-# sbatch -J B_Bdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bdmuh/Jobs/
-# sbatch -J B_Bdmuh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bdmuh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bdmu/Jobs/
-# sbatch -J B_Bdmu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bdmu
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Bdmuhl/Jobs/
-# sbatch -J B_Bdmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Bdmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gdmhl/Jobs/
-# sbatch -J B_Gdmhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gdmhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gdmu/Jobs/
-# sbatch -J B_Gdmu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gdmu
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gdmuh/Jobs/
-# sbatch -J B_Gdmuh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gdmuh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gdmuhl/Jobs/
-# sbatch -J B_Gdmuhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gdmuhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gdmusl/Jobs/
-# sbatch -J B_Gdmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gdmusl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gduhl/Jobs/
-# sbatch -J B_Gduhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gduhl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Gmusl/Jobs/
-# sbatch -J B_Gmusl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Gmusl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_I/Jobs/
-# sbatch -J B_I -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_I
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Ih/Jobs/
-# sbatch -J B_Ih -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Ih
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Ihl/Jobs/
-# sbatch -J B_Ihl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Ihl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Igh/Jobs/
-# sbatch -J B_Igh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Igh
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Ighl/Jobs/
-# sbatch -J B_Ighl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Ighl
-# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261003_allblock_str_cv_rats/20261027_B_Igsl/Jobs/
-# sbatch -J B_Igsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261003_allblock_str_cv_rats/20261027_B_Igsl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Q/Jobs/
+# sbatch -J B_Q -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Q
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qd/Jobs/
+# sbatch -J B_Qd -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qd
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qg/Jobs/
+# sbatch -J B_Qg -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qg
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qh/Jobs/
+# sbatch -J B_Qh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qdh/Jobs/
+# sbatch -J B_Qdh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qdh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qdg/Jobs/
+# sbatch -J B_Qdg -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qdg
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qgh/Jobs/
+# sbatch -J B_Qgh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qgh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qghl/Jobs/
+# sbatch -J B_Qghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qghl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qdhl/Jobs/
+# sbatch -J B_Qdhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Qdghl/Jobs/
+# sbatch -J B_Qdghl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Qdghl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_B/Jobs/
+# sbatch -J B_B -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_B
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Bu/Jobs/
+# sbatch -J B_Bu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Bu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Bdu/Jobs/
+# sbatch -J B_Bdu -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Bdu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Bduhl/Jobs/
+# sbatch -J B_Bduhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Bduhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Bduh/Jobs/
+# sbatch -J B_Bduh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Bduh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Buhl/Jobs/
+# sbatch -J B_Buhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Buhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Bdhl/Jobs/
+# sbatch -J B_Bdhl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Bdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Gduhl/Jobs/
+# sbatch -J B_Gduhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Gduhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_G/Jobs/
+# sbatch -J B_G -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_G
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Guhl/Jobs/
+# sbatch -J B_Guhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Guhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Gdhl/Jobs/
+# sbatch -J B_Gdhl -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Gdhl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Gdu/Jobs/
+# sbatch -J B_Gdu -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Gdu
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Gduh/Jobs/
+# sbatch -J B_Gduh -t 14-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Gduh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_I/Jobs/
+# sbatch -J B_I -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_I
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Ih/Jobs/
+# sbatch -J B_Ih -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Ih
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Ihl/Jobs/
+# sbatch -J B_Ihl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Ihl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Igh/Jobs/
+# sbatch -J B_Igh -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Igh
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Ighl/Jobs/
+# sbatch -J B_Ighl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Ighl
+# cd /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/output/r_fits/20261113_allblock_str_cv_rats/20261113_B_Igsl/Jobs/
+# sbatch -J B_Igsl -t 3-00:00 --array=1-9 /mnt/pve/Homes/rishika/behavioralAnalysis/matlabModelFitting/code/rMAB_submit.sh 20261113_allblock_str_cv_rats/20261113_B_Igsl
+
 
 # weekly fits
 # structured
